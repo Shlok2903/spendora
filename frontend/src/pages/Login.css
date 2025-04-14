@@ -1,0 +1,269 @@
+/* Login page container - similar to home container */
+.login-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease;
+}
+
+/* Left content section */
+.login-content-section {
+  width: 50%;
+  padding: 3.5rem 5rem;
+  display: flex;
+  flex-direction: column;
+  animation: slideInFromLeft 0.7s ease;
+}
+
+.logo-container {
+  margin-bottom: 3rem;
+}
+
+.logo {
+  width: 190px;
+  height: auto;
+}
+
+.login-form-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 700px;
+}
+
+.login-heading {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+  color: #1E1E1E;
+  animation: fadeUp 0.7s ease 0.1s both;
+}
+
+.login-subheading {
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #0FBAE5;
+  margin-bottom: 3rem;
+  animation: fadeUp 0.7s ease 0.2s both;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  animation: shake 0.5s ease;
+}
+
+form {
+  width: 100%;
+  animation: fadeUp 0.7s ease 0.3s both;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #1E1E1E;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 30px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: #0FBAE5;
+}
+
+.forgot-password {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.forgot-password a {
+  color: #0FBAE5;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.forgot-password a:hover {
+  color: #0891b2;
+  text-decoration: underline;
+}
+
+.login-button {
+  background-color: #1E1E1E;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  transition: all 0.3s ease;
+  animation: fadeUp 0.7s ease 0.4s both;
+}
+
+.login-button:hover {
+  background-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.login-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Right dashboard preview section - reuse the same style */
+.dashboard-preview {
+  content: '';
+  position: fixed;
+  top: 2%;
+  bottom: 2%;
+  right: 1%;
+  width: 42%;
+  background-image: url('../assets/abstract_image.jpg');
+  background-size: cover;
+  background-position: center;
+  opacity: 1;
+  border-radius: 25px;
+  animation: slideInFromRight 0.7s ease;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-10%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(10%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .login-content-section {
+    padding: 2rem 3rem;
+  }
+  
+  .login-heading {
+    font-size: 3rem;
+  }
+  
+  .login-subheading {
+    font-size: 1.3rem;
+  }
+}
+
+/* Tablet */
+@media (max-width: 992px) {
+  .login-container {
+    flex-direction: column;
+  }
+  
+  .login-content-section,
+  .dashboard-preview {
+    width: 100%;
+  }
+  
+  .login-content-section {
+    padding: 2.5rem;
+    min-height: 65vh;
+  }
+  
+  .dashboard-preview {
+    position: relative;
+    min-height: 35vh;
+    width: 100%;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: 0;
+  }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+  .login-content-section {
+    padding: 1.5rem;
+  }
+  
+  .login-heading {
+    font-size: 2.5rem;
+  }
+  
+  .login-subheading {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .form-group input {
+    padding: 0.8rem;
+  }
+} 

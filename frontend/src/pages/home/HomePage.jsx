@@ -1,11 +1,21 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './HomePage.css';
 import logo from '../../assets/logo.svg';
 
 const HomePage = () => {
+  const [isExiting, setIsExiting] = useState(false);
+  const navigate = useNavigate();
+
+  const handleNavigation = (path) => {
+    setIsExiting(true);
+    setTimeout(() => {
+      navigate(path);
+    }, 500); // Match the exit animation duration
+  };
+
   return (
-    <div className="home-container">
+    <div className={`home-container ${isExiting ? 'exit' : ''}`}>
       <div className="content-section">
         <div className="logo-container">
           <img src={logo} alt="Spendora Logo" className="logo" />
@@ -23,8 +33,18 @@ const HomePage = () => {
           </p>
           
           <div className="cta-buttons">
-            <Link to="/signup" className="sign-up-btn">Sign up</Link>
-            <Link to="/login" className="login-btn">Login →</Link>
+            <button 
+              onClick={() => handleNavigation('/register')} 
+              className="sign-up-btn"
+            >
+              Sign up
+            </button>
+            <button 
+              onClick={() => handleNavigation('/login')} 
+              className="login-btn"
+            >
+              Login →
+            </button>
           </div>
         </div>
       </div>

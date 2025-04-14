@@ -42,19 +42,19 @@ function App() {
             <Router>
               <Routes>
                 {/* Public Routes */}
-                <Route path="/home" element={<HomePage />} />
+                <Route path="/" element={<HomePage />} />
                 
                 {/* Authentication Routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 
                 {/* Authenticated Routes */}
-                <Route path="/" element={
+                <Route path="/app" element={
                   <PrivateRoute>
                     <Layout />
                   </PrivateRoute>
                 }>
-                  <Route index element={<Navigate to="/dashboard" replace />} />
+                  <Route index element={<Dashboard />} />
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="expenses" element={<Expenses />} />
                   <Route path="income" element={<Income />} />
@@ -63,8 +63,8 @@ function App() {
                   <Route path="*" element={<NotFound />} />
                 </Route>
                 
-                {/* Redirect root to home page if not authenticated */}
-                <Route path="*" element={<Navigate to="/home" replace />} />
+                {/* Catch all route - redirect to home page */}
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Router>
           </AuthProvider>

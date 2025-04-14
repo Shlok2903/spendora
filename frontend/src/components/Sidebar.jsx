@@ -45,12 +45,12 @@ const Sidebar = ({ open, setOpen }) => {
   };
 
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Expenses', icon: <RupeeIcon />, path: '/expenses' },
-    { text: 'Income', icon: <IncomeIcon />, path: '/income' },
-    { text: 'Categories', icon: <CategoryIcon />, path: '/categories' },
-    { text: 'Chat', icon: <ChatIcon />, path: '/chat' },
-    { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/app/dashboard' },
+    { text: 'Expenses', icon: <RupeeIcon />, path: '/app/expenses' },
+    { text: 'Income', icon: <IncomeIcon />, path: '/app/income' },
+    { text: 'Categories', icon: <CategoryIcon />, path: '/app/categories' },
+    { text: 'Chat', icon: <ChatIcon />, path: '/app/chat' },
+    { text: 'Settings', icon: <SettingsIcon />, path: '/app/settings' },
   ];
 
   const handleNavigation = (path) => {
@@ -124,7 +124,7 @@ const Sidebar = ({ open, setOpen }) => {
           >
             <ListItemButton
               onClick={() => handleNavigation(item.path)}
-              selected={location.pathname === item.path}
+              selected={location.pathname === item.path || location.pathname === item.path.replace('/app/', '/') || (location.pathname === '/app' && item.path === '/app/dashboard')}
               sx={{
                 borderRadius: 1,
                 '&.Mui-selected': {
@@ -143,7 +143,7 @@ const Sidebar = ({ open, setOpen }) => {
                 },
               }}
             >
-              <ListItemIcon sx={{ color: location.pathname === item.path ? 'white' : 'inherit' }}>
+              <ListItemIcon sx={{ color: location.pathname === item.path || location.pathname === item.path.replace('/app/', '/') || (location.pathname === '/app' && item.path === '/app/dashboard') ? 'white' : 'inherit' }}>
                 {item.icon}
               </ListItemIcon>
               <ListItemText primary={item.text} />

@@ -48,19 +48,23 @@ body {
   overflow-x: hidden;
 }
 
-/* Home page container */
+/* Home page container - optimized for PC view first */
 .home-container {
   display: flex;
   min-height: 100vh;
   width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease;
 }
 
 /* Left content section */
 .content-section {
   width: 50%;
-  padding: 2rem 4rem;
+  padding: 3.5rem 5rem;
   display: flex;
   flex-direction: column;
+  animation: slideInFromLeft 0.6s ease;
 }
 
 .logo-container {
@@ -68,7 +72,7 @@ body {
 }
 
 .logo {
-  width: 150px;
+  width: 190px;
   height: auto;
 }
 
@@ -77,14 +81,16 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  max-width: 700px;
 }
 
 .main-heading {
-  font-size: 3.5rem;
+  font-size: 4rem;
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: 1.5rem;
   color: #1E1E1E;
+  animation: fadeUp 0.6s ease 0.1s both;
 }
 
 .tracking-text {
@@ -95,8 +101,8 @@ body {
 .tracking-text::before {
   content: '';
   position: absolute;
-  width: 35px;
-  height: 35px;
+  width: 40px;
+  height: 40px;
   background-color: #4ED1F8;
   border-radius: 50%;
   left: -15px;
@@ -107,8 +113,8 @@ body {
 .tracking-text::after {
   content: '';
   position: absolute;
-  width: 35px;
-  height: 35px;
+  width: 40px;
+  height: 40px;
   background-color: #0FBAE5;
   border-radius: 50%;
   left: 5px;
@@ -117,17 +123,19 @@ body {
 }
 
 .sub-heading {
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 400;
   line-height: 1.6;
   color: #666;
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
+  animation: fadeUp 0.6s ease 0.2s both;
 }
 
 .cta-buttons {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   align-items: center;
+  animation: fadeUp 0.6s ease 0.3s both;
 }
 
 .sign-up-btn {
@@ -135,8 +143,8 @@ body {
   color: white;
   border: none;
   border-radius: 30px;
-  padding: 0.8rem 3rem;
-  font-size: 1rem;
+  padding: 1rem 3.5rem;
+  font-size: 1.1rem;
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
@@ -146,16 +154,19 @@ body {
 
 .sign-up-btn:hover {
   background-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .login-btn {
   color: #1E1E1E;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 500;
   text-decoration: none;
   display: flex;
   align-items: center;
   transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
 }
 
 .login-btn:hover {
@@ -163,34 +174,158 @@ body {
 }
 
 /* Right dashboard preview section */
-.dashboard-preview {
-  width: 50%;
-  background: linear-gradient(to bottom, #4ED1F8, #0FBAE5);
-  position: relative;
-  overflow: hidden;
-}
 
-.dashboard-preview::before {
+.dashboard-preview{
   content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  top: 2%;
+  bottom: 2%;
+  right: 1%;
+  width: 42%;
   background-image: url('../../assets/abstract_image.jpg');
   background-size: cover;
   background-position: center;
-  opacity: 0.6;
-  mix-blend-mode: soft-light;
+  opacity: 1;
+  border-radius: 25px;
+  animation: slideInFromRight 0.6s ease;
 }
 
-/* Responsive styles */
-@media (max-width: 1200px) {
-  .main-heading {
-    font-size: 3rem;
+/* Animations for transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-10%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(10%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Exit animations - applied when clicking links */
+.home-container a {
+  transition: all 0.3s ease;
+}
+
+.home-container a:active {
+  transform: scale(0.95);
+}
+
+/* Page transition effect */
+.home-container.exit {
+  animation: fadeOut 0.4s ease forwards;
+}
+
+.home-container.exit .content-section {
+  animation: slideOutToLeft 0.5s ease forwards;
+}
+
+.home-container.exit .dashboard-preview {
+  animation: slideOutToRight 0.5s ease forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-10%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(10%);
+    opacity: 0;
+  }
+}
+
+/* Responsive styles - First optimize for desktop/laptop before mobile */
+@media (max-width: 1600px) {
+  .content-section {
+    padding: 3rem 4rem;
+  }
+  
+  .main-heading {
+    font-size: 3.5rem;
+  }
+}
+
+@media (max-width: 1366px) {
+  .content-section {
+    padding: 2.5rem 3.5rem;
+  }
+  
+  .main-heading {
+    font-size: 3.2rem;
+  }
+  
+  .sub-heading {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 1200px) {
+  .content-section {
+    padding: 2rem 3rem;
+  }
+  
+  .main-heading {
+    font-size: 2.8rem;
+  }
+  
+  .sign-up-btn {
+    padding: 0.9rem 3rem;
+  }
+}
+
+/* Tablet */
 @media (max-width: 992px) {
   .home-container {
     flex-direction: column;
@@ -202,51 +337,87 @@ body {
   }
   
   .content-section {
-    padding: 2rem;
+    padding: 2.5rem;
+    min-height: 65vh;
   }
   
   .logo-container {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
   }
   
   .hero-content {
-    padding: 2rem 0;
+    padding: 1rem 0;
+    max-width: 600px;
   }
   
   .dashboard-preview {
-    min-height: 600px;
+    position: relative;
+    min-height: 45vh;
+    width: 100%;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: 0;
   }
 }
 
+/* Mobile landscape */
 @media (max-width: 768px) {
+  .content-section {
+    padding: 2rem;
+    min-height: 60vh;
+  }
+  
   .main-heading {
-    font-size: 2.5rem;
+    font-size: 2.4rem;
   }
   
   .sub-heading {
-    font-size: 1rem;
+    font-size: 1.1rem;
+    margin-bottom: 2.5rem;
+  }
+  
+  .sign-up-btn {
+    padding: 0.8rem 2.5rem;
+  }
+  
+  .dashboard-preview {
+    min-height: 40vh;
   }
 }
 
+/* Mobile portrait */
 @media (max-width: 576px) {
   .content-section {
     padding: 1.5rem;
+    min-height: 65vh;
+  }
+  
+  .logo-container {
+    margin-bottom: 1.5rem;
   }
   
   .main-heading {
     font-size: 2rem;
   }
   
+  .sub-heading {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+  
   .cta-buttons {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1rem;
   }
   
   .sign-up-btn {
     width: 100%;
+    padding: 0.8rem 1.5rem;
   }
   
   .dashboard-preview {
-    min-height: 500px;
+    min-height: 35vh;
   }
 } 
