@@ -48,6 +48,7 @@ import {
 } from '@mui/icons-material';
 import { expenseAPI, incomeAPI, categoryAPI } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import './Dashboard.css';
 
 // Color palette for charts
 const COLORS = ['#2e7d32', '#1976d2', '#9c27b0', '#f44336', '#ff9800', '#ffeb3b', '#4caf50', '#00bcd4', '#9e9e9e'];
@@ -110,7 +111,7 @@ const Dashboard = () => {
 
   // Summary cards with key metrics
   const SummaryCard = ({ title, amount, icon, color, subtitle }) => (
-    <Card sx={{ height: '100%', transition: 'transform 0.3s', '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 } }}>
+    <Card className="summary-card">
       <CardContent>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
@@ -160,26 +161,28 @@ const Dashboard = () => {
   }
 
   return (
-    <Box sx={{ maxWidth: isDesktop ? '1600px' : '100%', mx: 'auto' }}>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+    <Box className="dashboard-container">
+      <Box className="dashboard-header">
+        <Typography variant="h4" component="h1">
           Hello, {user?.first_name || 'User'}!
         </Typography>
         
-        <FormControl size="small" sx={{ width: 150 }}>
-          <InputLabel id="time-filter-label">Time Period</InputLabel>
-          <Select
-            labelId="time-filter-label"
-            id="time-filter"
-            value={timeFilter}
-            label="Time Period"
-            onChange={handleTimeFilterChange}
-          >
-            <MenuItem value="week">This Week</MenuItem>
-            <MenuItem value="month">This Month</MenuItem>
-            <MenuItem value="year">This Year</MenuItem>
-          </Select>
-        </FormControl>
+        <div className="filter-controls">
+          <FormControl size="small" sx={{ width: 150 }}>
+            <InputLabel id="time-filter-label">Time Period</InputLabel>
+            <Select
+              labelId="time-filter-label"
+              id="time-filter"
+              value={timeFilter}
+              label="Time Period"
+              onChange={handleTimeFilterChange}
+            >
+              <MenuItem value="week">This Week</MenuItem>
+              <MenuItem value="month">This Month</MenuItem>
+              <MenuItem value="year">This Year</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
       </Box>
 
       {/* Summary Cards */}
@@ -218,7 +221,7 @@ const Dashboard = () => {
         {/* Main Charts */}
         <Grid item xs={12} lg={8}>
           {/* Expense Trend Chart */}
-          <Paper sx={{ p: 3, mb: 3, height: '100%', boxShadow: 2 }}>
+          <Paper className="chart-paper chart-container">
             <Typography variant="h6" gutterBottom>
               Expense Trend
             </Typography>
@@ -306,7 +309,7 @@ const Dashboard = () => {
         {/* Side Charts */}
         <Grid item xs={12} lg={4}>
           {/* Category Expenses */}
-          <Paper sx={{ p: 3, mb: 3, height: '100%', boxShadow: 2 }}>
+          <Paper className="chart-paper chart-container">
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6">
                 Expenses by Category
@@ -317,23 +320,24 @@ const Dashboard = () => {
             
             {categoryExpenses.length > 0 ? (
               <>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
                       data={categoryExpenses}
+                      dataKey="value"
+                      nameKey="name"
                       cx="50%"
                       cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                       outerRadius={80}
                       fill="#8884d8"
-                      dataKey="value"
+                      label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                     >
                       {categoryExpenses.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip formatter={(value) => [`₹${value.toFixed(2)}`, 'Amount']} />
+                    <Legend />
                   </PieChart>
                 </ResponsiveContainer>
                 

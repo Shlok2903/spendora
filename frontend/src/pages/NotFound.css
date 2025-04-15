@@ -1,0 +1,123 @@
+/* NotFound page styles with BlauerNue font and responsive design */
+@import '../assets/styles/global.css';
+
+.not-found-container {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 2rem;
+  text-align: center;
+  animation: fadeIn 0.5s ease;
+}
+
+.not-found-code {
+  font-size: 8rem;
+  font-weight: 700;
+  color: #1E1E1E;
+  margin-bottom: 1rem;
+  line-height: 1;
+  animation: fadeUp 0.6s ease 0.1s both;
+}
+
+.not-found-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1E1E1E;
+  margin-bottom: 1.5rem;
+  animation: fadeUp 0.6s ease 0.2s both;
+}
+
+.not-found-message {
+  font-size: 1.2rem;
+  color: #666;
+  max-width: 600px;
+  margin-bottom: 2.5rem;
+  animation: fadeUp 0.6s ease 0.3s both;
+}
+
+.not-found-button {
+  background-color: #1E1E1E;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.3s ease;
+  animation: fadeUp 0.6s ease 0.4s both;
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+.not-found-button:hover {
+  background-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.not-found-illustration {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 2.5rem;
+  animation: fadeUp 0.6s ease 0.1s both;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+  .not-found-code {
+    font-size: 6rem;
+  }
+  
+  .not-found-title {
+    font-size: 2rem;
+  }
+  
+  .not-found-message {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .not-found-code {
+    font-size: 5rem;
+  }
+  
+  .not-found-title {
+    font-size: 1.8rem;
+  }
+  
+  .not-found-message {
+    font-size: 1rem;
+  }
+  
+  .not-found-button {
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .not-found-code {
+    font-size: 4rem;
+  }
+  
+  .not-found-title {
+    font-size: 1.5rem;
+  }
+  
+  .not-found-message {
+    font-size: 0.9rem;
+  }
+  
+  .not-found-button {
+    padding: 0.75rem 1.75rem;
+    font-size: 0.9rem;
+    width: 100%;
+    max-width: 300px;
+  }
+} 

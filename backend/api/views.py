@@ -3,11 +3,13 @@ from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from .models import Category, SubCategory, Expense, Income, ChatMessage
+from django.conf import settings
+from .models import Category, SubCategory, Expense, Income, ChatMessage, OTPVerification
 from .serializers import (
     UserSerializer, UserUpdateSerializer, CategorySerializer,
     SubCategorySerializer, ExpenseSerializer, IncomeSerializer,
-    ChatMessageSerializer
+    ChatMessageSerializer, OTPRequestSerializer, OTPVerifySerializer,
+    PasswordResetSerializer, ChangePasswordSerializer
 )
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
@@ -20,6 +22,7 @@ import logging
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Sum, Q
+from .utils import send_otp_email, verify_otp
 
 # Create a logger for the API
 logger = logging.getLogger('api')
@@ -47,6 +50,8 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return UserSerializer
+        elif self.action == 'change_password':
+            return ChangePasswordSerializer
         return UserUpdateSerializer
     
     def get_permissions(self):
@@ -64,6 +69,68 @@ class UserViewSet(viewsets.ModelViewSet):
     def me(self, request):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['put', 'patch'])
+    def profile(self, request):
+        """
+        Update user's profile information
+        """
+        user = request.user
+        serializer = UserUpdateSerializer(user, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['post'])
+    def change_password(self, request):
+        """
+        Change user's password
+        """
+        user = request.user
+        serializer = ChangePasswordSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            # Check if current password is correct
+            if not user.check_password(serializer.validated_data['current_password']):
+                return Response(
+                    {"current_password": "Wrong password"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Set the new password
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            
+            return Response({"status": "password changed successfully"})
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['post'])
+    def upload_profile_image(self, request):
+        """
+        Upload user profile image
+        """
+        user = request.user
+        
+        if 'profile_image' not in request.FILES:
+            return Response(
+                {"profile_image": "No image provided"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Delete old image if it exists
+        if user.profile_image:
+            user.profile_image.delete()
+        
+        user.profile_image = request.FILES['profile_image']
+        user.save()
+        
+        return Response({
+            "status": "profile image uploaded successfully",
+            "profile_image": request.build_absolute_uri(user.profile_image.url) if user.profile_image else None
+        })
 
 class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
@@ -788,3 +855,326 @@ class ChatViewSet(viewsets.ViewSet):
                 "success": False,
                 "message": f"Error creating welcome message: {str(e)}"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def request_otp(request):
+    """
+    Request OTP for registration, login, or password reset
+    """
+    serializer = OTPRequestSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    email = serializer.validated_data['email']
+    verification_type = serializer.validated_data['verification_type']
+    
+    # For registration, we don't create a user until OTP is verified
+    if verification_type == 'registration':
+        # Check if user already exists and is verified
+        if User.objects.filter(email=email, is_email_verified=True).exists():
+            return Response(
+                {"error": "Email already registered and verified. Please login instead."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # Store user details temporarily in the session or pass them in the OTP verification
+        first_name = request.data.get('first_name', '')
+        last_name = request.data.get('last_name', '')
+        
+        # Create a temporary user object without saving to DB
+        user = User(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            is_active=True,
+            is_email_verified=False
+        )
+    else:
+        # For login or password reset, user must exist
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User with this email does not exist."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
+    # Send OTP email
+    success, otp_obj = send_otp_email(user, verification_type)
+    
+    if not success:
+        return Response(
+            {"error": "Failed to send verification email. Please try again."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+    # For registration, we send back the user details to use after verification
+    response_data = {
+        "message": f"Verification code sent to {email}. Valid for {settings.OTP_EXPIRY_TIME} minutes.",
+        "email": email,
+        "verification_type": verification_type
+    }
+    
+    if verification_type == 'registration':
+        response_data.update({
+            "first_name": first_name,
+            "last_name": last_name
+        })
+    
+    return Response(response_data)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def verify_otp_code(request):
+    """
+    Verify OTP code for registration, login, or password reset
+    """
+    serializer = OTPVerifySerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    email = serializer.validated_data['email']
+    otp_code = serializer.validated_data['otp_code']
+    verification_type = serializer.validated_data['verification_type']
+    
+    # Verify OTP
+    is_valid, message = verify_otp(email, otp_code, verification_type)
+    
+    if not is_valid:
+        return Response({"error": message}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Handle registration: create user after OTP verification
+    if verification_type == 'registration':
+        # Check if user already exists but is not verified
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+            if user.is_email_verified:
+                return Response(
+                    {"error": "Email already registered and verified. Please login instead."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            # Update existing unverified user
+            user.is_email_verified = True
+            user.first_name = request.data.get('first_name', user.first_name)
+            user.last_name = request.data.get('last_name', user.last_name)
+            user.save()
+        else:
+            # Create new user now that OTP is verified
+            user = User.objects.create(
+                email=email,
+                first_name=request.data.get('first_name', ''),
+                last_name=request.data.get('last_name', ''),
+                is_active=True,
+                is_email_verified=True
+            )
+            
+            # Set password if provided
+            password = request.data.get('password')
+            if password:
+                user.set_password(password)
+                user.save()
+    else:
+        # For login or password reset, user must exist
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User with this email does not exist."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
+    # Handle verification type-specific logic
+    if verification_type == 'registration':
+        # Generate JWT tokens
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+        
+        return Response({
+            "message": "Email verified and registration successful.",
+            "user_id": user.id,
+            "email": user.email,
+            "is_verified": user.is_email_verified,
+            "tokens": {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }
+        })
+    
+    elif verification_type == 'login':
+        # Check if user is verified
+        if not user.is_email_verified:
+            return Response(
+                {"error": "Email not verified. Please complete registration first."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Generate JWT tokens
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+        
+        return Response({
+            "message": "Login successful.",
+            "user_id": user.id,
+            "email": user.email,
+            "tokens": {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }
+        })
+    
+    elif verification_type == 'password_reset':
+        # Just verify OTP for password reset, actual reset will be done in reset_password view
+        return Response({
+            "message": "OTP verified successfully. Proceed to reset password.",
+            "email": user.email,
+            "verification_type": verification_type
+        })
+    
+    return Response({
+        "message": "OTP verified successfully.",
+        "email": user.email,
+        "verification_type": verification_type
+    })
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def login(request):
+    """
+    Login without OTP verification
+    """
+    email = request.data.get('email')
+    password = request.data.get('password')
+    
+    if not email or not password:
+        return Response(
+            {"error": "Email and password are required."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "Invalid email or password."},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    # Check password
+    if not user.check_password(password):
+        return Response(
+            {"error": "Invalid email or password."},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    # Check if user is verified
+    if not user.is_email_verified:
+        return Response(
+            {"error": "Email not verified. Please complete registration first."},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    # Generate JWT tokens
+    from rest_framework_simplejwt.tokens import RefreshToken
+    refresh = RefreshToken.for_user(user)
+    
+    return Response({
+        "message": "Login successful.",
+        "user_id": user.id,
+        "email": user.email,
+        "tokens": {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }
+    })
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def reset_password(request):
+    """
+    Reset password with OTP verification
+    """
+    serializer = PasswordResetSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    email = serializer.validated_data['email']
+    otp_code = serializer.validated_data['otp_code']
+    new_password = serializer.validated_data['new_password']
+    
+    # Get user
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "User with this email does not exist."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    # Check if OTP has been verified for this email in the last 10 minutes
+    # This allows us to skip OTP verification if the user has already verified it
+    recent_time = timezone.now() - timedelta(minutes=settings.OTP_EXPIRY_TIME)
+    recently_verified = OTPVerification.objects.filter(
+        email=email,
+        verification_type='password_reset',
+        is_used=True,
+        created_at__gte=recent_time
+    ).exists()
+    
+    if not recently_verified:
+        # If no recently verified OTP found, verify OTP now
+        is_valid, message = verify_otp(email, otp_code, 'password_reset')
+        
+        if not is_valid:
+            return Response({"error": message}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Reset password
+    user.set_password(new_password)
+    user.save()
+    
+    return Response({
+        "message": "Password reset successfully. Please login with your new password."
+    })
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def test_email(request):
+    """
+    Test email sending functionality
+    """
+    try:
+        email = request.data.get('email')
+        if not email:
+            return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Create test user object
+        test_user = User(
+            email=email,
+            first_name="Test",
+            last_name="User"
+        )
+        
+        # Send test OTP email
+        success, otp_obj = send_otp_email(test_user, 'registration')
+        
+        if success:
+            return Response({
+                "message": "Test email sent successfully",
+                "email": email,
+                "otp_code": otp_obj.otp_code,  # Only for testing!
+                "backend": settings.EMAIL_BACKEND,
+                "debug": DEBUG
+            })
+        else:
+            return Response({
+                "error": "Failed to send test email",
+                "backend": settings.EMAIL_BACKEND,
+                "debug": DEBUG
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+    except Exception as e:
+        return Response({
+            "error": f"Error sending test email: {str(e)}",
+            "backend": settings.EMAIL_BACKEND,
+            "debug": DEBUG
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

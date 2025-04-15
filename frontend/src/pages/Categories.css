@@ -1,0 +1,296 @@
+/* Categories page styles with BlauerNue font and responsive design */
+@import '../assets/styles/global.css';
+
+.categories-container {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  padding: 1.5rem 2rem;
+  animation: fadeIn 0.5s ease;
+}
+
+.categories-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  animation: fadeUp 0.6s ease 0.1s both;
+}
+
+.categories-header h1 {
+  color: #1E1E1E;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.categories-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.categories-content {
+  animation: fadeUp 0.6s ease 0.2s both;
+}
+
+/* Category cards grid */
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.category-card {
+  height: 100%;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border-radius: 12px;
+  overflow: hidden;
+  animation: fadeUp 0.6s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.category-card-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.category-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.category-icon-container {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+/* Form styling */
+.category-form {
+  animation: fadeUp 0.6s ease;
+}
+
+.category-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.category-form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.color-picker-item {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.color-picker-item:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.color-picker-item.selected {
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #1E1E1E;
+}
+
+.icon-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.icon-picker-item {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-picker-item:hover {
+  background-color: #e0e0e0;
+}
+
+.icon-picker-item.selected {
+  background-color: #1E1E1E;
+  color: white;
+}
+
+/* Custom styling for MUI components */
+.categories-container .MuiPaper-root {
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.categories-container .MuiButton-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  border-radius: 30px;
+  text-transform: none;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+}
+
+.categories-container .MuiButton-contained {
+  background-color: #1E1E1E;
+  color: white;
+}
+
+.categories-container .MuiButton-contained:hover {
+  background-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.categories-container .MuiButton-outlined {
+  border-color: #1E1E1E;
+  color: #1E1E1E;
+}
+
+.categories-container .MuiButton-outlined:hover {
+  border-color: #333;
+  background-color: rgba(30, 30, 30, 0.04);
+}
+
+.categories-container .MuiIconButton-root {
+  transition: transform 0.2s ease;
+}
+
+.categories-container .MuiIconButton-root:hover {
+  transform: translateY(-2px);
+}
+
+.categories-container .MuiTypography-h4,
+.categories-container .MuiTypography-h5,
+.categories-container .MuiTypography-h6 {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  font-weight: 700;
+  color: #1E1E1E;
+}
+
+.categories-container .MuiTypography-body1,
+.categories-container .MuiTypography-body2 {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+.categories-container .MuiInputLabel-root,
+.categories-container .MuiOutlinedInput-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .categories-container {
+    padding: 1.2rem 1.5rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .categories-container {
+    padding: 1rem;
+  }
+  
+  .categories-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .categories-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .categories-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .category-form-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .category-form-buttons .MuiButton-root {
+    width: 100%;
+  }
+  
+  .color-picker, .icon-picker {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .categories-container {
+    padding: 0.8rem;
+  }
+  
+  .categories-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .categories-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  
+  .categories-actions .MuiButton-root {
+    width: 100%;
+  }
+  
+  .categories-grid {
+    grid-template-columns: 1fr;
+  }
+} 

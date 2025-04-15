@@ -1,0 +1,267 @@
+/* Reports page styles with BlauerNue font and responsive design */
+@import '../assets/styles/global.css';
+
+.reports-container {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  padding: 1.5rem 2rem;
+  animation: fadeIn 0.5s ease;
+}
+
+.reports-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  animation: fadeUp 0.6s ease 0.1s both;
+}
+
+.reports-header h1 {
+  color: #1E1E1E;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.reports-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.reports-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  animation: fadeUp 0.6s ease 0.2s both;
+}
+
+.date-filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.reports-content {
+  animation: fadeUp 0.6s ease 0.3s both;
+}
+
+/* Card styling */
+.summary-card {
+  height: 100%;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border-radius: 12px;
+  overflow: hidden;
+  animation: fadeUp 0.6s ease 0.2s both;
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* Chart styling */
+.chart-paper {
+  padding: 1.5rem;
+  height: 100%;
+  margin-bottom: 2rem;
+}
+
+.chart-container {
+  animation: fadeUp 0.6s ease 0.3s both;
+}
+
+.chart-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.chart-section {
+  margin-bottom: 2rem;
+}
+
+/* Custom styling for MUI components */
+.reports-container .MuiPaper-root {
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.reports-container .MuiButton-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  border-radius: 30px;
+  text-transform: none;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+}
+
+.reports-container .MuiButton-contained {
+  background-color: #1E1E1E;
+  color: white;
+}
+
+.reports-container .MuiButton-contained:hover {
+  background-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.reports-container .MuiButton-outlined {
+  border-color: #1E1E1E;
+  color: #1E1E1E;
+}
+
+.reports-container .MuiButton-outlined:hover {
+  border-color: #333;
+  background-color: rgba(30, 30, 30, 0.04);
+}
+
+.reports-container .MuiToggleButtonGroup-root {
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+.reports-container .MuiToggleButton-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  padding: 0.5rem 1.25rem;
+  text-transform: none;
+  font-weight: 500;
+  border-color: #e0e0e0;
+}
+
+.reports-container .MuiToggleButton-root.Mui-selected {
+  background-color: #1E1E1E;
+  color: white;
+}
+
+.reports-container .MuiTypography-h4,
+.reports-container .MuiTypography-h5,
+.reports-container .MuiTypography-h6 {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  font-weight: 700;
+  color: #1E1E1E;
+}
+
+.reports-container .MuiTypography-body1,
+.reports-container .MuiTypography-body2 {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+.reports-container .MuiInputLabel-root,
+.reports-container .MuiOutlinedInput-root,
+.reports-container .MuiInputBase-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+.reports-container .MuiTableCell-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+.reports-container .MuiTableCell-head {
+  font-weight: 600;
+  background-color: #f8f9fa;
+}
+
+/* Date picker */
+.reports-container .MuiPickersDay-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+.reports-container .MuiPickersDay-root.Mui-selected {
+  background-color: #1E1E1E;
+}
+
+/* Empty state */
+.empty-report {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.empty-report-icon {
+  font-size: 4rem;
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .reports-container {
+    padding: 1.2rem 1.5rem;
+  }
+  
+  .chart-paper {
+    padding: 1.2rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .reports-container {
+    padding: 1rem;
+  }
+  
+  .reports-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .reports-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .chart-paper {
+    padding: 1rem;
+  }
+  
+  .chart-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .reports-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .date-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .reports-filter .MuiFormControl-root {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .reports-container {
+    padding: 0.8rem;
+  }
+  
+  .reports-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .reports-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  
+  .reports-actions .MuiButton-root {
+    width: 100%;
+  }
+  
+  .chart-paper {
+    padding: 0.8rem;
+  }
+} 

@@ -1,0 +1,256 @@
+/* Settings page styles with BlauerNue font and responsive design */
+@import '../assets/styles/global.css';
+
+.settings-container {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  padding: 1.5rem 2rem;
+  animation: fadeIn 0.5s ease;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  animation: fadeUp 0.6s ease 0.1s both;
+}
+
+.settings-header h1 {
+  color: #1E1E1E;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.settings-content {
+  animation: fadeUp 0.6s ease 0.2s both;
+}
+
+/* Tab styling */
+.settings-tabs {
+  margin-bottom: 2rem;
+}
+
+.settings-tabs .MuiTabs-root {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.settings-tabs .MuiTab-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  text-transform: none;
+  font-weight: 500;
+  font-size: 1rem;
+  min-width: 120px;
+  padding: 1rem 1.5rem;
+}
+
+.settings-tabs .MuiTab-root.Mui-selected {
+  color: #1E1E1E;
+  font-weight: 600;
+}
+
+.settings-tabs .MuiTabs-indicator {
+  background-color: #1E1E1E;
+  height: 3px;
+}
+
+.tab-panel {
+  padding-top: 1.5rem;
+}
+
+/* Form styling */
+.settings-form {
+  max-width: 600px;
+  margin-bottom: 2rem;
+}
+
+.settings-form-section {
+  margin-bottom: 2rem;
+}
+
+.settings-form-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #1E1E1E;
+  font-weight: 600;
+}
+
+.settings-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.settings-form-buttons {
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+/* Card styling */
+.settings-card {
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.settings-card-header {
+  padding: 1.25rem 1.5rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.settings-card-content {
+  padding: 1.5rem;
+}
+
+/* Switch styling */
+.settings-switch {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.settings-switch-label {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-switch-title {
+  font-weight: 500;
+  font-size: 1rem;
+  color: #1E1E1E;
+}
+
+.settings-switch-description {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+/* Custom styling for MUI components */
+.settings-container .MuiPaper-root {
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.settings-container .MuiButton-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  border-radius: 30px;
+  text-transform: none;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+}
+
+.settings-container .MuiButton-contained {
+  background-color: #1E1E1E;
+  color: white;
+}
+
+.settings-container .MuiButton-contained:hover {
+  background-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.settings-container .MuiButton-outlined {
+  border-color: #1E1E1E;
+  color: #1E1E1E;
+}
+
+.settings-container .MuiButton-outlined:hover {
+  border-color: #333;
+  background-color: rgba(30, 30, 30, 0.04);
+}
+
+.settings-container .MuiSwitch-root .MuiSwitch-switchBase.Mui-checked {
+  color: #1E1E1E;
+}
+
+.settings-container .MuiSwitch-root .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track {
+  background-color: #1E1E1E;
+}
+
+.settings-container .MuiTypography-h4,
+.settings-container .MuiTypography-h5,
+.settings-container .MuiTypography-h6 {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  font-weight: 700;
+  color: #1E1E1E;
+}
+
+.settings-container .MuiTypography-body1,
+.settings-container .MuiTypography-body2 {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+.settings-container .MuiInputLabel-root,
+.settings-container .MuiOutlinedInput-root,
+.settings-container .MuiInputBase-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+.settings-container .MuiFormHelperText-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .settings-container {
+    padding: 1.2rem 1.5rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .settings-container {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .settings-tabs .MuiTab-root {
+    min-width: 100px;
+    padding: 0.8rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .settings-form-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .settings-form-buttons .MuiButton-root {
+    width: 100%;
+  }
+  
+  .settings-switch {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .settings-container {
+    padding: 0.8rem;
+  }
+  
+  .settings-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .settings-tabs .MuiTab-root {
+    min-width: 80px;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .settings-card-header {
+    padding: 1rem;
+  }
+  
+  .settings-card-content {
+    padding: 1rem;
+  }
+} 

@@ -95,15 +95,27 @@ const Register = () => {
       last_name: formData.last_name,
       email: formData.email,
       password: formData.password,
-      password2: formData.confirmPassword
+      confirmPassword: formData.confirmPassword
     };
     
-    const success = await register(userData);
+    const result = await register(userData);
     setLoading(false);
     
-    if (success) {
-      toast.success('Registration successful! Please log in.');
-      navigate('/login');
+    if (result && result.success) {
+      if (result.requiresOTP) {
+        // Navigate to OTP verification page
+        toast.info('Please verify your email with the code sent to your inbox.');
+        navigate('/verify-otp', {
+          state: {
+            email: result.email,
+            verificationType: result.verificationType
+          }
+        });
+      } else {
+        // Regular registration success
+        toast.success('Registration successful! Please log in.');
+        navigate('/login');
+      }
     } else {
       // Only show toast error if there's no inline error from AuthContext
       if (!error) {
@@ -198,6 +210,7 @@ const Register = () => {
                   label="Password"
                   type={showPassword ? 'text' : 'password'}
                   id="password"
+                  autoComplete="new-password"
                   value={formData.password}
                   onChange={handleChange}
                   error={!!formErrors.password}
@@ -225,10 +238,24 @@ const Register = () => {
                   label="Confirm Password"
                   type={showPassword ? 'text' : 'password'}
                   id="confirmPassword"
+                  autoComplete="new-password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   error={!!formErrors.confirmPassword}
                   helperText={formErrors.confirmPassword}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
             </Grid>
@@ -239,9 +266,9 @@ const Register = () => {
               sx={{ mt: 3, mb: 2, py: 1.5 }}
               disabled={loading}
             >
-              {loading ? <CircularProgress size={24} /> : 'Sign Up'}
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign Up'}
             </Button>
-            <Grid container justifyContent="flex-end">
+            <Grid container justifyContent="center">
               <Grid item>
                 <Link component={RouterLink} to="/login" variant="body2">
                   Already have an account? Sign in

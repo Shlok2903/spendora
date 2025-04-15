@@ -1,0 +1,188 @@
+/* Dashboard styles with BlauerNue font and responsive design */
+@import '../assets/styles/global.css';
+
+.dashboard-container {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  padding: 1.5rem 2rem;
+  animation: fadeIn 0.5s ease;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  animation: fadeUp 0.6s ease 0.1s both;
+}
+
+.dashboard-header h1 {
+  color: #1E1E1E;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Custom styles for MUI components to match our theme */
+.dashboard-container .MuiPaper-root {
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.dashboard-container .MuiPaper-root:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.dashboard-container .MuiCard-root {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.dashboard-container .MuiCardContent-root {
+  padding: 1.5rem;
+}
+
+.dashboard-container .MuiTypography-h4 {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  font-weight: 700;
+  color: #1E1E1E;
+}
+
+.dashboard-container .MuiTypography-h6 {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  font-weight: 600;
+  color: #1E1E1E;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-container .MuiTypography-subtitle1 {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  color: #666;
+}
+
+.dashboard-container .MuiSelect-select {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+.dashboard-container .MuiButton-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  border-radius: 30px;
+  text-transform: none;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+}
+
+.dashboard-container .MuiButton-contained {
+  background-color: #1E1E1E;
+  color: white;
+}
+
+.dashboard-container .MuiButton-contained:hover {
+  background-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.summary-card {
+  height: 100%;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border-radius: 12px;
+  overflow: hidden;
+  animation: fadeUp 0.6s ease 0.2s both;
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.chart-container {
+  animation: fadeUp 0.6s ease 0.3s both;
+}
+
+.chart-paper {
+  padding: 1.5rem;
+  height: 100%;
+}
+
+.expenses-table {
+  animation: fadeUp 0.6s ease 0.4s both;
+}
+
+.table-container {
+  margin-top: 1.5rem;
+}
+
+.dashboard-container .MuiTableCell-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+.dashboard-container .MuiTableCell-head {
+  font-weight: 600;
+  background-color: #f8f9fa;
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .dashboard-container {
+    padding: 1.2rem 1.5rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .filter-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-paper {
+    padding: 1rem;
+  }
+  
+  .dashboard-container .MuiCardContent-root {
+    padding: 1.2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-container {
+    padding: 0.8rem;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .filter-controls {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .chart-paper {
+    padding: 0.8rem;
+  }
+  
+  .dashboard-container .MuiCardContent-root {
+    padding: 1rem;
+  }
+} 

@@ -68,7 +68,9 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'api/templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -130,6 +132,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Media files (Uploaded files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -235,3 +242,20 @@ LOGGING = {
         },
     },
 }
+
+# Email configuration settings
+# Get email backend from environment, default to SMTP
+EMAIL_BACKEND_ENV = os.environ.get('EMAIL_BACKEND', 'smtp')
+
+    # Use SMTP backend for all other cases
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.hostinger.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'no-reply@spendora.space')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'Dhp@4604')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Spendora <no-reply@spendora.space>')
+# print(f"Using SMTP email backend - emails will be sent via {EMAIL_HOST}")
+
+# OTP settings
+OTP_EXPIRY_TIME = 10  # minutes

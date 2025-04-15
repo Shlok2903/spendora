@@ -1,0 +1,218 @@
+/* Expenses page styles */
+@import '../assets/styles/global.css';
+
+.expenses-container {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  padding: 1.5rem 2rem;
+  animation: fadeIn 0.5s ease;
+}
+
+.expenses-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  animation: fadeUp 0.6s ease 0.1s both;
+}
+
+.expenses-header h1 {
+  color: #1E1E1E;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.expenses-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.expenses-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  animation: fadeUp 0.6s ease 0.2s both;
+}
+
+.expenses-content {
+  animation: fadeUp 0.6s ease 0.3s both;
+}
+
+/* Table styling */
+.expenses-table {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.expenses-table .MuiTableCell-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+.expenses-table .MuiTableCell-head {
+  font-weight: 600;
+  background-color: #f8f9fa;
+}
+
+.expenses-table .MuiTableRow-root:hover {
+  background-color: #f5f5f5;
+}
+
+/* Form styling */
+.expense-form {
+  animation: fadeUp 0.6s ease;
+}
+
+.expense-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.expense-form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.expense-form .MuiTextField-root,
+.expense-form .MuiFormControl-root {
+  width: 100%;
+}
+
+.expense-form .MuiInputLabel-root,
+.expense-form .MuiOutlinedInput-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+/* Custom styling for MUI components */
+.expenses-container .MuiPaper-root {
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.expenses-container .MuiButton-root {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  border-radius: 30px;
+  text-transform: none;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+}
+
+.expenses-container .MuiButton-contained {
+  background-color: #1E1E1E;
+  color: white;
+}
+
+.expenses-container .MuiButton-contained:hover {
+  background-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.expenses-container .MuiButton-outlined {
+  border-color: #1E1E1E;
+  color: #1E1E1E;
+}
+
+.expenses-container .MuiButton-outlined:hover {
+  border-color: #333;
+  background-color: rgba(30, 30, 30, 0.04);
+}
+
+.expenses-container .MuiTypography-h4,
+.expenses-container .MuiTypography-h5,
+.expenses-container .MuiTypography-h6 {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  font-weight: 700;
+  color: #1E1E1E;
+}
+
+.expenses-container .MuiTypography-body1,
+.expenses-container .MuiTypography-body2 {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+.expenses-container .MuiSelect-select {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+/* Pagination */
+.expenses-pagination {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.expenses-pagination .MuiPagination-ul {
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .expenses-container {
+    padding: 1.2rem 1.5rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .expenses-container {
+    padding: 1rem;
+  }
+  
+  .expenses-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .expenses-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .expenses-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .expenses-filter .MuiFormControl-root {
+    width: 100%;
+  }
+  
+  .expense-form-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .expense-form-buttons .MuiButton-root {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .expenses-container {
+    padding: 0.8rem;
+  }
+  
+  .expenses-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .expenses-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  
+  .expenses-actions .MuiButton-root {
+    width: 100%;
+  }
+} 

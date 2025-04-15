@@ -81,62 +81,98 @@ export const AuthProvider = ({ children }) => {
       
       console.log('Sending login request with credentials:', { email: credentials.email, password: '[REDACTED]' });
       
-      const response = await axios.post('/token/', credentials);
-      const { access, refresh } = response.data;
+      // Direct login without OTP - using the correct URL path
+      const response = await axios.post('/auth/login/', {
+        email: credentials.email,
+        password: credentials.password
+      });
       
-      // Store tokens in localStorage
-      localStorage.setItem('access_token', access);
-      localStorage.setItem('refresh_token', refresh);
+      // Check for tokens in response
+      if (response.data.tokens) {
+        const { access, refresh } = response.data.tokens;
+        
+        // Store tokens in localStorage
+        localStorage.setItem('access_token', access);
+        localStorage.setItem('refresh_token', refresh);
+        
+        // Set token state
+        setToken(access);
+        
+        // Make sure the axios instance immediately gets the new token
+        axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+        
+        // Fetch user profile
+        await fetchUserProfile();
+        
+        setLoading(false);
+        return { success: true };
+      }
       
-      // Set token state
-      setToken(access);
+      setLoading(false);
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
       
-      // Make sure the axios instance immediately gets the new token
-      axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+      if (error.response?.data) {
+        setError(error.response.data.error || 'Login failed. Please check your credentials.');
+      } else {
+        setError('Login failed. Please check your credentials.');
+      }
       
-      console.log('Login successful, tokens stored and axios headers updated');
-      console.log('Current axios headers:', axios.defaults.headers.common);
+      setLoading(false);
+      return false;
+    }
+  };
+
+  const verifyOTP = async (email, otp, verificationType, userData = null) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Create request data with OTP verification details
+      const requestData = {
+        email,
+        otp_code: otp,
+        verification_type: verificationType
+      };
       
-      // Fetch user profile after successful login
-      await fetchUserProfile();
+      // For registration, include all user data to create account
+      if (verificationType === 'registration' && userData) {
+        requestData.first_name = userData.first_name;
+        requestData.last_name = userData.last_name;
+        requestData.password = userData.password;
+      }
+      
+      // Using the correct URL path
+      const response = await axios.post('/auth/verify-otp/', requestData);
+      
+      // If tokens are returned (for login or registration)
+      if (response.data.tokens) {
+        const { access, refresh } = response.data.tokens;
+        
+        // Store tokens in localStorage
+        localStorage.setItem('access_token', access);
+        localStorage.setItem('refresh_token', refresh);
+        
+        // Set token state
+        setToken(access);
+        
+        // Make sure the axios instance immediately gets the new token
+        axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+        
+        // Fetch user profile after successful OTP verification
+        await fetchUserProfile();
+      }
       
       setLoading(false);
       return true;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('OTP verification error:', error);
       
-      // More detailed error handling
-      if (error.response) {
-        console.error('Server response error:', error.response.status, error.response.data);
-        
-        // Handle different types of errors
-        if (error.response.data) {
-          if (typeof error.response.data === 'object') {
-            // Format field errors
-            const errorMessages = Object.entries(error.response.data)
-              .map(([field, messages]) => {
-                // Handle array of messages or single message
-                const message = Array.isArray(messages) ? messages.join(', ') : messages;
-                return `${field}: ${message}`;
-              })
-              .join('\n');
-            
-            setError(errorMessages);
-          } else {
-            // Direct error message
-            setError(error.response.data);
-          }
-        } else {
-          // Generic error based on status
-          setError(`Login failed (${error.response.status}). Please check your credentials.`);
-        }
-      } else if (error.request) {
-        // Network error
-        console.error('Network error - No response received:', error.request);
-        setError('Network error. Please check your internet connection.');
+      if (error.response?.data) {
+        setError(error.response.data.error || 'OTP verification failed. Please try again.');
       } else {
-        // Other errors
-        setError(error.message || 'Failed to login. Please try again.');
+        setError('OTP verification failed. Please try again.');
       }
       
       setLoading(false);
@@ -148,46 +184,99 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      console.log('Registering user with data:', { ...userData, password: '[REDACTED]' });
-      const response = await axios.post('/users/', userData);
-      console.log('Registration successful:', response.data);
+      console.log('Starting registration process for:', { ...userData, password: '[REDACTED]' });
       
-      // Automatically log in the user after successful registration
-      const loginSuccess = await login({ 
-        email: userData.email, 
-        password: userData.password 
+      // Rename password_confirm to match backend if needed
+      if (userData.confirmPassword) {
+        userData.password_confirm = userData.confirmPassword;
+        delete userData.confirmPassword;
+      }
+      
+      // Request OTP for registration verification - using the correct URL path
+      const otpResponse = await axios.post('/auth/request-otp/', {
+        email: userData.email,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        verification_type: 'registration'
       });
       
-      if (!loginSuccess) {
-        console.log('Registration succeeded but automatic login failed. User should log in manually.');
+      setLoading(false);
+      
+      // Return data for OTP verification including all user data for later creation
+      return {
+        success: true,
+        requiresOTP: true,
+        email: userData.email,
+        verificationType: 'registration',
+        userData: userData  // Include full user data to create account after verification
+      };
+    } catch (error) {
+      console.error('Registration error:', error);
+      
+      if (error.response?.data) {
+        setError(error.response.data.error || 'Registration failed. Please try again.');
+      } else {
+        setError('Registration failed. Please try again.');
       }
+      
+      setLoading(false);
+      return false;
+    }
+  };
+
+  const requestPasswordReset = async (email) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Using the correct URL path
+      const response = await axios.post('/auth/request-otp/', {
+        email,
+        verification_type: 'password_reset'
+      });
+      
+      setLoading(false);
+      return {
+        success: true,
+        email,
+        verificationType: 'password_reset'
+      };
+    } catch (error) {
+      console.error('Password reset request error:', error);
+      
+      if (error.response?.data) {
+        setError(error.response.data.error || 'Failed to request password reset. Please try again.');
+      } else {
+        setError('Failed to request password reset. Please try again.');
+      }
+      
+      setLoading(false);
+      return false;
+    }
+  };
+
+  const resetPassword = async (email, otp, newPassword, confirmPassword) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Using the correct URL path
+      const response = await axios.post('/auth/reset-password/', {
+        email,
+        otp_code: otp,
+        new_password: newPassword,
+        new_password_confirm: confirmPassword
+      });
       
       setLoading(false);
       return true;
     } catch (error) {
-      console.error('Registration error', error);
-      console.error('Registration error details:', error.response?.data || error.message);
+      console.error('Password reset error:', error);
       
-      // Improved error handling to better display validation errors
       if (error.response?.data) {
-        // Check if the error is an object with field-specific errors
-        if (typeof error.response.data === 'object') {
-          // Format the error messages for display
-          const errorMessages = Object.entries(error.response.data)
-            .map(([field, messages]) => {
-              // If messages is an array, join them
-              const message = Array.isArray(messages) ? messages.join(', ') : messages;
-              return `${field}: ${message}`;
-            })
-            .join('\n');
-          
-          setError(errorMessages);
-        } else {
-          // If it's a string or other format, use it directly
-          setError(error.response.data);
-        }
+        setError(error.response.data.error || 'Failed to reset password. Please try again.');
       } else {
-        setError('Registration failed. Please try again.');
+        setError('Failed to reset password. Please try again.');
       }
       
       setLoading(false);
@@ -211,6 +300,10 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    verifyOTP,
+    requestPasswordReset,
+    resetPassword,
+    fetchUserProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

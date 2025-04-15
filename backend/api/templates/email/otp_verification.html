@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - Spendora</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .otp-code {
+            font-size: 32px;
+            letter-spacing: 6px;
+            font-weight: 700;
+            color: #4f46e5;
+            margin: 30px 0;
+            padding: 15px;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        
+        .message {
+            margin-bottom: 30px;
+            font-size: 16px;
+            color: #4b5563;
+        }
+        
+        .note {
+            font-size: 14px;
+            color: #6b7280;
+            padding: 15px;
+            background-color: #f9fafb;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .footer {
+            background-color: #f3f4f6;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .social-links {
+            margin-top: 15px;
+        }
+        
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #6366f1;
+            text-decoration: none;
+        }
+        
+        .logo {
+            font-weight: 700;
+            font-size: 24px;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .expire-info {
+            color: #dc2626;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Spendora</div>
+            <h1>Verify Your Email</h1>
+        </div>
+        
+        <div class="content">
+            <div class="message">
+                <p>Hi {{ user.first_name }},</p>
+                <p>Thanks for signing up with Spendora! To complete your registration and access all our features, please use the verification code below:</p>
+            </div>
+            
+            <div class="otp-code">{{ otp_code }}</div>
+            
+            <div class="message">
+                <p>Enter this code on the verification page to confirm your email address.</p>
+                <p class="expire-info">This code will expire in {{ expiry_time }} minutes.</p>
+            </div>
+            
+            <div class="note">
+                <p>If you didn't create an account with Spendora, please ignore this email or contact our support team.</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 Spendora. All rights reserved.</p>
+            <p>Your personal finance companion</p>
+            <div class="social-links">
+                <a href="#">Twitter</a>
+                <a href="#">Facebook</a>
+                <a href="#">Instagram</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

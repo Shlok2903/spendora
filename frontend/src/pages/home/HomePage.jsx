@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './HomePage.css';
 import logo from '../../assets/logo.svg';
+import arrowUpDown from '../../assets/arrow-up-down.svg';
 
 const HomePage = () => {
   const [isExiting, setIsExiting] = useState(false);
@@ -23,7 +24,9 @@ const HomePage = () => {
         
         <div className="hero-content">
           <h1 className="main-heading">
-            Efficient Money <span className="tracking-text">Tracking</span> <br />
+            Efficient Money 
+            <br></br><img src={arrowUpDown} alt="Arrow Icon" className="tracking-icon" />
+            <span className="tracking-text">Tracking</span> <br />
             & Management
           </h1>
           
@@ -39,12 +42,16 @@ const HomePage = () => {
             >
               Sign up
             </button>
-            <button 
-              onClick={() => handleNavigation('/login')} 
-              className="login-btn"
+            <Link 
+              to="/login"
+              className="login-link"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavigation('/login');
+              }}
             >
-              Login →
-            </button>
+              Login <span className="login-arrow">→</span>
+            </Link>
           </div>
         </div>
       </div>

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { ArrowForward } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -24,12 +23,24 @@ const Login = () => {
     };
     
     console.log('Submitting login credentials as object:', { email });
-    const success = await login(credentials);
+    const result = await login(credentials);
     setLoading(false);
     
-    if (success) {
-      toast.success('Login successful! Welcome back.');
-      navigate('/app');
+    if (result && result.success) {
+      if (result.requiresOTP) {
+        // Navigate to OTP verification page
+        toast.info('Please verify your identity with the code sent to your email.');
+        navigate('/verify-otp', {
+          state: {
+            email: result.email,
+            verificationType: result.verificationType
+          }
+        });
+      } else {
+        // Regular login success
+        toast.success('Login successful! Welcome back.');
+        navigate('/app');
+      }
     } else {
       // Only show toast error if there's no inline error from AuthContext
       if (!error) {
@@ -88,9 +99,13 @@ const Login = () => {
               className="login-button"
               disabled={loading}
             >
-              Login
-              <ArrowForward />
+              <span className="login-button-text">{loading ? 'Logging in...' : 'Login'}</span>
+              <span className="login-arrow">→</span>
             </button>
+            
+            <div className="register-link">
+              Don't have an account? <RouterLink to="/register">Sign up</RouterLink>
+            </div>
           </form>
         </div>
       </div>

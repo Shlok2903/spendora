@@ -3,9 +3,9 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2', // Blue as primary color (was green)
-      light: '#63a4ff',
-      dark: '#004ba0',
+      main: '#11BBE5', // New primary color
+      light: '#5feeff',
+      dark: '#008bb3',
       contrastText: '#fff',
     },
     secondary: {
@@ -45,6 +45,7 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: [
+      'Blauer Nue',
       '-apple-system',
       'BlinkMacSystemFont',
       '"Segoe UI"',

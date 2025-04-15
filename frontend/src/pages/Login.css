@@ -1,3 +1,44 @@
+/* Import custom fonts */
+@font-face {
+  font-family: 'BlauerNue';
+  src: url('../assets/fonts/BlauerNue-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'BlauerNue';
+  src: url('../assets/fonts/BlauerNue-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'BlauerNue';
+  src: url('../assets/fonts/BlauerNue-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'BlauerNue';
+  src: url('../assets/fonts/BlauerNue-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'BlauerNue';
+  src: url('../assets/fonts/BlauerNue-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Login page container - similar to home container */
 .login-container {
   display: flex;
@@ -76,20 +117,25 @@ form {
   font-weight: 500;
   margin-bottom: 0.5rem;
   color: #1E1E1E;
+  padding-left: 1rem;
 }
 
 .form-group input {
   width: 100%;
   padding: 1rem;
-  border: 1px solid #ccc;
+  border: 1px solid #1E1E1E;
   border-radius: 30px;
   font-size: 1rem;
   transition: border-color 0.3s ease;
   outline: none;
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  background-color: white;
+  color: #1E1E1E;
 }
 
 .form-group input:focus {
   border-color: #0FBAE5;
+  box-shadow: 0 0 0 2px rgba(15, 186, 229, 0.1);
 }
 
 .forgot-password {
@@ -123,11 +169,13 @@ form {
   text-align: center;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  justify-content: space-between;
   width: 100%;
   transition: all 0.3s ease;
   animation: fadeUp 0.7s ease 0.4s both;
+  font-family: 'BlauerNue', 'Poppins', 'Inter', sans-serif;
+  position: relative;
+  overflow: hidden;
 }
 
 .login-button:hover {
@@ -136,9 +184,42 @@ form {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
+.login-arrow {
+  position: absolute;
+  right: 2rem;
+  transition: transform 0.3s ease;
+}
+
+.login-button:hover .login-arrow {
+  transform: translateX(1.5rem);
+}
+
+.login-button-text {
+  margin: 0 auto;
+  display: block;
+}
+
 .login-button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+.register-link {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.register-link a {
+  color: #0FBAE5;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
 }
 
 /* Right dashboard preview section - reuse the same style */

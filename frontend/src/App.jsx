@@ -19,7 +19,11 @@ import Expenses from './pages/Expenses';
 import Income from './pages/Income';
 import Categories from './pages/Categories';
 import Chat from './pages/Chat';
+import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
+import VerifyOTP from './pages/VerifyOTP';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 // PrivateRoute component
 const PrivateRoute = ({ children }) => {
@@ -47,6 +51,9 @@ function App() {
                 {/* Authentication Routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/verify-otp" element={<VerifyOTP />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 
                 {/* Authenticated Routes */}
                 <Route path="/app" element={
@@ -60,6 +67,7 @@ function App() {
                   <Route path="income" element={<Income />} />
                   <Route path="categories" element={<Categories />} />
                   <Route path="chat" element={<Chat />} />
+                  <Route path="settings" element={<Settings />} />
                   <Route path="*" element={<NotFound />} />
                 </Route>
                 
