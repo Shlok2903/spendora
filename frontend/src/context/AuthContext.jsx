@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import axios from '../lib/axiosConfig';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import axios, { authEvents } from '../lib/axiosConfig';
 
 const AuthContext = createContext(null);
 
@@ -8,6 +8,40 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem('access_token') || null);
+  
+  // Define logout function with useCallback
+  const logout = useCallback(() => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    delete axios.defaults.headers.common['Authorization'];
+    setToken(null);
+    setUser(null);
+  }, []);
+  
+  // Listen for auth errors from axios interceptors
+  useEffect(() => {
+    const handleAuthError = () => {
+      console.log('Auth error event received');
+      logout();
+      setError('Your session has expired. Please log in again.');
+    };
+    
+    const handleTokenRefreshFailed = () => {
+      console.log('Token refresh failed event received');
+      logout();
+      setError('Authentication failed. Please log in again.');
+    };
+    
+    // Add event listeners
+    window.addEventListener('auth-error', handleAuthError);
+    window.addEventListener('token-refresh-failed', handleTokenRefreshFailed);
+    
+    // Clean up event listeners on unmount
+    return () => {
+      window.removeEventListener('auth-error', handleAuthError);
+      window.removeEventListener('token-refresh-failed', handleTokenRefreshFailed);
+    };
+  }, [logout]);
   
   // Check if token exists in localStorage and initialize user
   useEffect(() => {
@@ -124,23 +158,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const verifyOTP = async (email, otp, verificationType, userData = null) => {
+  const verifyOTP = async (data) => {
     setLoading(true);
     setError(null);
     
     try {
       // Create request data with OTP verification details
       const requestData = {
-        email,
-        otp_code: otp,
-        verification_type: verificationType
+        email: data.email,
+        otp_code: data.otp,
+        verification_type: data.verification_type
       };
       
       // For registration, include all user data to create account
-      if (verificationType === 'registration' && userData) {
-        requestData.first_name = userData.first_name;
-        requestData.last_name = userData.last_name;
-        requestData.password = userData.password;
+      if (data.verification_type === 'registration' && data.userData) {
+        requestData.first_name = data.userData.first_name;
+        requestData.last_name = data.userData.last_name;
+        requestData.password = data.userData.password;
+        
+        console.log('Verification with user data:', { 
+          email: data.email, 
+          first_name: data.userData.first_name,
+          last_name: data.userData.last_name,
+          hasPassword: !!data.userData.password
+        });
       }
       
       // Using the correct URL path
@@ -164,8 +205,10 @@ export const AuthProvider = ({ children }) => {
         await fetchUserProfile();
       }
       
-      setLoading(false);
-      return true;
+      return {
+        success: true,
+        token: response.data.token || null
+      };
     } catch (error) {
       console.error('OTP verification error:', error);
       
@@ -175,8 +218,12 @@ export const AuthProvider = ({ children }) => {
         setError('OTP verification failed. Please try again.');
       }
       
+      return {
+        success: false,
+        message: error.response?.data?.error || 'OTP verification failed'
+      };
+    } finally {
       setLoading(false);
-      return false;
     }
   };
 
@@ -255,21 +302,58 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const resetPassword = async (email, otp, newPassword, confirmPassword) => {
+  const requestOTP = async (data) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await axios.post('/auth/request-otp/', {
+        email: data.email,
+        verification_type: data.verification_type,
+        first_name: data.first_name,
+        last_name: data.last_name
+      });
+      
+      setLoading(false);
+      return {
+        success: true,
+        email: data.email,
+        verificationType: data.verification_type
+      };
+    } catch (error) {
+      console.error('OTP request error:', error);
+      
+      if (error.response?.data) {
+        setError(error.response.data.error || 'Failed to send verification code. Please try again.');
+      } else {
+        setError('Failed to send verification code. Please try again.');
+      }
+      
+      setLoading(false);
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Failed to send verification code'
+      };
+    }
+  };
+
+  const resetPassword = async (data) => {
     setLoading(true);
     setError(null);
     
     try {
       // Using the correct URL path
       const response = await axios.post('/auth/reset-password/', {
-        email,
-        otp_code: otp,
-        new_password: newPassword,
-        new_password_confirm: confirmPassword
+        email: data.email,
+        otp_code: data.token,
+        new_password: data.password,
+        new_password_confirm: data.password_confirm
       });
       
       setLoading(false);
-      return true;
+      return {
+        success: true
+      };
     } catch (error) {
       console.error('Password reset error:', error);
       
@@ -280,16 +364,11 @@ export const AuthProvider = ({ children }) => {
       }
       
       setLoading(false);
-      return false;
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Failed to reset password'
+      };
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    delete axios.defaults.headers.common['Authorization'];
-    setToken(null);
-    setUser(null);
   };
 
   const value = {
@@ -304,6 +383,7 @@ export const AuthProvider = ({ children }) => {
     requestPasswordReset,
     resetPassword,
     fetchUserProfile,
+    requestOTP,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

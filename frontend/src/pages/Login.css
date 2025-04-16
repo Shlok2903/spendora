@@ -347,4 +347,129 @@ form {
   .form-group input {
     padding: 0.8rem;
   }
+}
+
+/* OTP Input styles */
+.otp-container {
+  display: flex;
+  justify-content: space-between;
+  margin: 25px 0;
+  gap: 8px;
+}
+
+.otp-input {
+  width: 45px;
+  height: 50px;
+  color: #1E1E1E;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  background-color: #f9f9f9;
+  transition: all 0.3s ease;
+}
+
+.otp-input:focus {
+  border-color: #11BBE5;
+  box-shadow: 0 0 0 2px rgba(17, 187, 229, 0.2);
+  background-color: white;
+  outline: none;
+}
+
+.resend-code {
+  margin-top: 15px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.resend-button {
+  background: none;
+  border: none;
+  color: #11BBE5;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.9rem;
+  text-decoration: underline;
+}
+
+.resend-button:hover {
+  color: #0e9ac0;
+}
+
+.resend-button:disabled {
+  color: #999;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+/* Password strength indicator */
+.password-strength {
+  margin-top: 8px;
+  position: relative;
+  height: 20px;
+}
+
+.strength-meter {
+  height: 4px;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  margin-bottom: 5px;
+}
+
+.password-strength span {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Success message */
+.success-message {
+  background-color: rgba(46, 204, 64, 0.1);
+  color: #2ECC40;
+  border: 1px solid rgba(46, 204, 64, 0.2);
+  border-radius: 4px;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+
+.success-message::before {
+  content: '✓';
+  font-weight: bold;
+  margin-right: 8px;
+  font-size: 1rem;
+}
+
+/* Form row for side-by-side inputs like in register form */
+.form-row {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.form-group-half {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Input error messages */
+.input-error {
+  color: #ff4136;
+  font-size: 0.8rem;
+  margin-top: 6px;
+  padding-left: 1rem;
+  animation: shake 0.5s ease;
+}
+
+/* Responsive styles for form row */
+@media (max-width: 576px) {
+  .form-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
 } 

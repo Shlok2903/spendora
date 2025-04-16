@@ -1,234 +1,233 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  Container,
-  Box,
-  Typography,
-  Paper,
-  TextField,
-  Button,
-  Alert,
-  InputAdornment,
-  IconButton,
-  CircularProgress
-} from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import './ResetPassword.css';
+import logo from '../assets/logo.svg';
+import './Login.css';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [emailFromStorage, setEmailFromStorage] = useState('');
-  const [otpFromStorage, setOtpFromStorage] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState({
+    score: 0,
+    message: '',
+    color: ''
+  });
   
-  const location = useLocation();
-  const navigate = useNavigate();
+  const { resetPassword } = useAuth();
   const toast = useToast();
-  const { resetPassword, error: authError } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   
-  // Get email and OTP from location state or localStorage
+  // Get email and token from location state
+  const email = location.state?.email;
+  const token = location.state?.token;
+  
   useEffect(() => {
-    // Try to get from location state first
-    let emailValue = location.state?.email || '';
-    let otpValue = location.state?.otp_code || '';
-    
-    // If not in location state, try localStorage
-    if (!emailValue || !otpValue) {
-      const verified = localStorage.getItem('password_reset_verified') === 'true';
-      const timestamp = parseInt(localStorage.getItem('password_reset_timestamp') || '0', 10);
-      const expiryTime = 10 * 60 * 1000; // 10 minutes in milliseconds
-      const isValid = verified && (Date.now() - timestamp < expiryTime);
-      
-      if (isValid) {
-        emailValue = localStorage.getItem('password_reset_email') || '';
-        otpValue = localStorage.getItem('password_reset_otp') || '';
-        setEmailFromStorage(emailValue);
-        setOtpFromStorage(otpValue);
-      } else {
-        // Clear invalid localStorage items
-        localStorage.removeItem('password_reset_verified');
-        localStorage.removeItem('password_reset_email');
-        localStorage.removeItem('password_reset_otp');
-        localStorage.removeItem('password_reset_timestamp');
-      }
-    }
-    
-    // If we still don't have valid values, redirect
-    if (!emailValue || !otpValue) {
-      toast.error('Missing required information. Please go through the verification process again.');
+    if (!email || !token) {
+      toast.error('Missing information for password reset.');
       navigate('/forgot-password');
     }
-  }, [location.state, navigate, toast]);
+  }, [email, token, navigate, toast]);
   
-  // Clean up localStorage on component unmount
-  useEffect(() => {
-    return () => {
-      localStorage.removeItem('password_reset_verified');
-      localStorage.removeItem('password_reset_email');
-      localStorage.removeItem('password_reset_otp');
-      localStorage.removeItem('password_reset_timestamp');
-    };
-  }, []);
-  
-  // Display auth context errors
-  useEffect(() => {
-    if (authError) {
-      setError(authError);
+  const checkPasswordStrength = (password) => {
+    // Password strength criteria
+    const hasMinLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    
+    // Calculate strength score (0-4)
+    let score = 0;
+    if (hasMinLength) score++;
+    if (hasUpperCase && hasLowerCase) score++;
+    if (hasNumber) score++;
+    if (hasSpecialChar) score++;
+    
+    // Determine message and color based on score
+    let message = '';
+    let color = '';
+    
+    switch (score) {
+      case 0:
+        message = 'Very Weak';
+        color = '#FF4136'; // Red
+        break;
+      case 1:
+        message = 'Weak';
+        color = '#FF851B'; // Orange
+        break;
+      case 2:
+        message = 'Medium';
+        color = '#FFDC00'; // Yellow
+        break;
+      case 3:
+        message = 'Strong';
+        color = '#2ECC40'; // Green
+        break;
+      case 4:
+        message = 'Very Strong';
+        color = '#3D9970'; // Dark Green
+        break;
+      default:
+        message = '';
+        color = '';
     }
-  }, [authError]);
+    
+    return { score, message, color };
+  };
   
-  const validatePassword = () => {
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    
+    if (newPassword) {
+      setPasswordStrength(checkPasswordStrength(newPassword));
+    } else {
+      setPasswordStrength({ score: 0, message: '', color: '' });
+    }
+  };
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Client-side validation
     if (!password) {
       setError('Password is required');
-      return false;
+      return;
     }
     
     if (password.length < 8) {
       setError('Password must be at least 8 characters long');
-      return false;
+      return;
     }
     
     if (password !== confirmPassword) {
       setError('Passwords do not match');
-      return false;
+      return;
     }
     
-    return true;
-  };
-  
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
-    
-    if (!validatePassword()) {
+    if (passwordStrength.score < 2) {
+      setError('Please choose a stronger password');
       return;
     }
     
     setLoading(true);
     setError('');
     
-    // Get email and OTP from location state or local storage
-    const email = location.state?.email || emailFromStorage;
-    const otpCode = location.state?.otp_code || otpFromStorage;
-    
-    if (!email || !otpCode) {
-      setError('Missing verification information. Please go through the process again.');
-      setLoading(false);
-      return;
-    }
-    
-    // Use the resetPassword function from AuthContext
-    const success = await resetPassword(email, otpCode, password, confirmPassword);
-    
-    setLoading(false);
-    
-    if (success) {
-      // Clear localStorage on success
-      localStorage.removeItem('password_reset_verified');
-      localStorage.removeItem('password_reset_email');
-      localStorage.removeItem('password_reset_otp');
-      localStorage.removeItem('password_reset_timestamp');
+    try {
+      const result = await resetPassword({
+        email,
+        token,
+        password,
+        password_confirm: confirmPassword
+      });
       
-      toast.success('Password reset successfully. Please login with your new password.');
-      navigate('/login');
-    } else if (!authError) {
-      // Only show this error if there's no auth context error (which would be shown by the effect)
-      setError('Failed to reset password. Please try again.');
+      if (result.success) {
+        toast.success('Password has been reset successfully!');
+        navigate('/login');
+      } else {
+        setError(result.message || 'Failed to reset password. Please try again.');
+      }
+    } catch (err) {
+      console.error('Password reset error:', err);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
   
   return (
-    <Container maxWidth="sm" className="reset-container">
-      <Paper elevation={3} className="reset-card">
-        <Box className="reset-header">
-          <Typography variant="h4" component="h1">
-            Reset Your Password
-          </Typography>
-          <Typography variant="body1" className="reset-subtitle">
-            Enter a new password for <strong>{location.state?.email || emailFromStorage}</strong>
-          </Typography>
-        </Box>
+    <div className="login-container">
+      <div className="login-content-section">
+        <div className="logo-container">
+          <img src={logo} alt="Spendora Logo" className="logo" />
+        </div>
         
-        <Box className="reset-content">
+        <div className="login-form-content">
+          <h1 className="login-heading">Create New Password</h1>
+          <p className="login-subheading">
+            Your new password must be different from previous passwords
+          </p>
+          
           {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <div className="error-message">
               {error}
-            </Alert>
+            </div>
           )}
           
-          <Box component="form" onSubmit={handleResetPassword}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="New Password"
-              type={showPassword ? 'text' : 'password'}
-              id="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ mb: 2 }}
-            />
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="form-group">
+              <label htmlFor="password">New Password</label>
+              <input
+                type="password"
+                id="password"
+                placeholder="Enter new password"
+                value={password}
+                onChange={handlePasswordChange}
+                required
+                style={{ 
+                  border: '1px solid #1E1E1E',
+                  borderRadius: '30px'
+                }}
+              />
+              {passwordStrength.message && (
+                <div className="password-strength">
+                  <div 
+                    className="strength-meter"
+                    style={{ 
+                      width: `${(passwordStrength.score / 4) * 100}%`,
+                      backgroundColor: passwordStrength.color
+                    }}
+                  ></div>
+                  <span style={{ color: passwordStrength.color }}>
+                    {passwordStrength.message}
+                  </span>
+                </div>
+              )}
+            </div>
             
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="confirmPassword"
-              label="Confirm New Password"
-              type={showConfirmPassword ? 'text' : 'password'}
-              id="confirmPassword"
-              autoComplete="new-password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      edge="end"
-                    >
-                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ mb: 3 }}
-            />
+            <div className="form-group">
+              <label htmlFor="confirmPassword">Confirm Password</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                style={{ 
+                  border: '1px solid #1E1E1E',
+                  borderRadius: '30px'
+                }}
+              />
+            </div>
             
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
+            <button 
+              type="submit" 
+              className="login-button"
               disabled={loading}
-              className="reset-button"
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Reset Password'}
-            </Button>
-          </Box>
-        </Box>
-      </Paper>
-    </Container>
+              <span className="login-button-text">
+                {loading ? 'Resetting...' : 'Reset Password'}
+              </span>
+              <span className="login-arrow">→</span>
+            </button>
+            
+            <div className="register-link">
+              Remember your password? <RouterLink to="/login" style={{ color: '#0FBAE5' }}>Back to Login</RouterLink>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div className="dashboard-preview">
+        {/* Dashboard preview is handled by CSS */}
+      </div>
+    </div>
   );
 };
 

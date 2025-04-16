@@ -31,6 +31,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import logoSvg from '../assets/logo.svg';
 
 // Drawer width
 const drawerWidth = 250;
@@ -52,7 +53,7 @@ const Sidebar = ({ open, setOpen }) => {
     { text: 'Expenses', icon: <RupeeIcon />, path: '/app/expenses' },
     { text: 'Income', icon: <IncomeIcon />, path: '/app/income' },
     { text: 'Categories', icon: <CategoryIcon />, path: '/app/categories' },
-    { text: 'Chat', icon: <ChatIcon />, path: '/app/chat', badge: 2 },
+    { text: 'Chat', icon: <ChatIcon />, path: '/app/chat' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/app/settings' },
   ];
 
@@ -95,18 +96,10 @@ const Sidebar = ({ open, setOpen }) => {
           height: 70,
         }}
       >
-        <Typography 
-          variant="h5" 
-          component="div" 
-          sx={{ 
-            fontWeight: 700, 
-            color: 'primary.main',
-            letterSpacing: '-0.5px',
-            fontFamily: 'Blauer Nue, sans-serif',
-          }}
-        >
-          Spendora
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <img src={logoSvg} alt="Spendora Logo" style={{ height: '32px', marginRight: '8px' }} />
+        
+        </Box>
         {isMobile && (
           <IconButton onClick={handleDrawerToggle} size="small">
             <ChevronLeftIcon />

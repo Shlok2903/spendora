@@ -103,9 +103,16 @@ DATABASES = {
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'OPTIONS': {
+            'user_attributes': ('email', 'first_name', 'last_name'),
+            'max_similarity': 0.7,
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -114,6 +121,14 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Custom password validation error messages
+PASSWORD_VALIDATION_MESSAGES = {
+    'password_too_short': 'Your password must contain at least 8 characters.',
+    'password_too_common': 'Your password is too common and easily guessable.',
+    'password_entirely_numeric': 'Your password cannot consist of only numbers.',
+    'password_too_similar': 'Your password cannot be too similar to your personal information.',
+}
 
 
 # Internationalization

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import logo from '../assets/logo.svg';
@@ -9,45 +9,79 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, error } = useAuth();
+  const [localError, setLocalError] = useState('');
+  const { login, error: authError } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Clear errors when component mounts or user changes input
+  useEffect(() => {
+    setLocalError('');
+  }, [email, password]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Ensure this is called to prevent form submission
+    
+    // Client-side validation
+    if (!email.trim()) {
+      setLocalError('Email is required');
+      return;
+    }
+    
+    if (!password) {
+      setLocalError('Password is required');
+      return;
+    }
+    
     setLoading(true);
+    setLocalError('');
     
     const credentials = {
-      email: email,
+      email: email.trim(),
       password: password
     };
     
     console.log('Submitting login credentials as object:', { email });
-    const result = await login(credentials);
-    setLoading(false);
-    
-    if (result && result.success) {
-      if (result.requiresOTP) {
-        // Navigate to OTP verification page
-        toast.info('Please verify your identity with the code sent to your email.');
-        navigate('/verify-otp', {
-          state: {
-            email: result.email,
-            verificationType: result.verificationType
-          }
-        });
+    try {
+      const result = await login(credentials);
+      
+      if (result && result.success) {
+        if (result.requiresOTP) {
+          // Navigate to OTP verification page
+          toast.info('Please verify your identity with the code sent to your email.');
+          navigate('/verify-otp', {
+            state: {
+              email: result.email,
+              verificationType: result.verificationType
+            }
+          });
+        } else {
+          // Regular login success
+          toast.success('Login successful! Welcome back.');
+          
+          // Check if there's a redirect path in location state
+          const from = location.state?.from?.pathname || '/app';
+          navigate(from);
+        }
       } else {
-        // Regular login success
-        toast.success('Login successful! Welcome back.');
-        navigate('/app');
+        // Only show toast error if there's no inline error
+        if (!authError && !localError) {
+          setLocalError('Login failed. Please check your credentials.');
+          toast.error('Login failed. Please check your credentials.');
+        }
       }
-    } else {
-      // Only show toast error if there's no inline error from AuthContext
-      if (!error) {
-        toast.error('Login failed. Please check your credentials.');
-      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setLocalError('An unexpected error occurred. Please try again.');
+      toast.error('Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Display error from auth context or local error
+  const displayError = authError || localError;
 
   return (
     <div className="login-container">
@@ -60,13 +94,13 @@ const Login = () => {
           <h1 className="login-heading">Hello Again!</h1>
           <p className="login-subheading">Welcome Back!</p>
           
-          {error && (
+          {displayError && (
             <div className="error-message">
-              {error}
+              {displayError}
             </div>
           )}
           
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <div className="form-group">
               <label htmlFor="email">Email Id</label>
               <input

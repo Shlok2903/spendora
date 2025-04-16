@@ -135,16 +135,17 @@ class OTPRequestSerializer(serializers.Serializer):
     def validate_email(self, value):
         verification_type = self.initial_data.get('verification_type', 'registration')
         
-        # For registration, the email shouldn't exist
+        # For registration, check email verification status
         if verification_type == 'registration':
             if User.objects.filter(email=value).exists():
                 user = User.objects.get(email=value)
                 if user.is_email_verified:
                     raise serializers.ValidationError("Email already registered. Please login instead.")
-                # If not verified, we'll allow it to get a new OTP
+                # If not verified, allow registration to continue
+                # We'll update the existing user during OTP verification
                 return value
         
-        # For login/password reset, the email should exist
+        # For login/password reset, user must exist
         elif verification_type in ['login', 'password_reset']:
             if not User.objects.filter(email=value).exists():
                 raise serializers.ValidationError("Email not registered. Please sign up first.")

@@ -1,22 +1,9 @@
 import { useState } from 'react';
-import { 
-  Box, 
-  Container, 
-  TextField, 
-  Button, 
-  Typography, 
-  Paper, 
-  Grid, 
-  Link,
-  InputAdornment,
-  IconButton,
-  Alert,
-  CircularProgress
-} from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import logo from '../assets/logo.svg';
+import './Login.css';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -26,13 +13,19 @@ const Register = () => {
     password: '',
     confirmPassword: ''
   });
-  const [showPassword, setShowPassword] = useState(false);
+  
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [formErrors, setFormErrors] = useState({});
+  const [passwordStrength, setPasswordStrength] = useState({
+    score: 0,
+    message: '',
+    color: ''
+  });
+  
   const { register, error } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
-
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -41,45 +34,105 @@ const Register = () => {
     });
     
     // Clear error for this field when user types
-    if (formErrors[name]) {
-      setFormErrors({
-        ...formErrors,
+    if (errors[name]) {
+      setErrors({
+        ...errors,
         [name]: ''
       });
     }
+    
+    // Check password strength
+    if (name === 'password') {
+      checkPasswordStrength(value);
+    }
   };
-
+  
+  const checkPasswordStrength = (password) => {
+    if (!password) {
+      setPasswordStrength({ score: 0, message: '', color: '' });
+      return;
+    }
+    
+    // Password strength criteria
+    const hasMinLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    
+    // Calculate strength score (0-4)
+    let score = 0;
+    if (hasMinLength) score++;
+    if (hasUpperCase && hasLowerCase) score++;
+    if (hasNumber) score++;
+    if (hasSpecialChar) score++;
+    
+    // Determine message and color based on score
+    let message = '';
+    let color = '';
+    
+    switch (score) {
+      case 0:
+        message = 'Very Weak';
+        color = '#FF4136'; // Red
+        break;
+      case 1:
+        message = 'Weak';
+        color = '#FF851B'; // Orange
+        break;
+      case 2:
+        message = 'Medium';
+        color = '#FFDC00'; // Yellow
+        break;
+      case 3:
+        message = 'Strong';
+        color = '#2ECC40'; // Green
+        break;
+      case 4:
+        message = 'Very Strong';
+        color = '#3D9970'; // Dark Green
+        break;
+      default:
+        message = '';
+        color = '';
+    }
+    
+    setPasswordStrength({ score, message, color });
+  };
+  
   const validateForm = () => {
-    const errors = {};
+    const newErrors = {};
     
     if (!formData.first_name.trim()) {
-      errors.first_name = 'First name is required';
+      newErrors.first_name = 'First name is required';
     }
     
     if (!formData.last_name.trim()) {
-      errors.last_name = 'Last name is required';
+      newErrors.last_name = 'Last name is required';
     }
     
     if (!formData.email.trim()) {
-      errors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = 'Email is invalid';
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
     }
     
     if (!formData.password) {
-      errors.password = 'Password is required';
+      newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
-      errors.password = 'Password must be at least 8 characters long';
+      newErrors.password = 'Password must be at least 8 characters long';
+    } else if (passwordStrength.score < 2) {
+      newErrors.password = 'Please choose a stronger password';
     }
     
     if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = 'Passwords do not match';
     }
     
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -108,7 +161,8 @@ const Register = () => {
         navigate('/verify-otp', {
           state: {
             email: result.email,
-            verificationType: result.verificationType
+            verificationType: result.verificationType,
+            userData: userData // Pass user data for account creation
           }
         });
       } else {
@@ -123,162 +177,155 @@ const Register = () => {
       }
     }
   };
-
+  
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-        }}
-      >
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            borderRadius: 2,
-            width: '100%',
-          }}
-        >
-          <Typography component="h1" variant="h4" sx={{ mb: 2, fontWeight: 'bold', color: 'primary.main' }}>
-            Spendora
-          </Typography>
-          <Typography component="h2" variant="h6" sx={{ mb: 3 }}>
-            Create an Account
-          </Typography>
+    <div className="login-container">
+      <div className="login-content-section">
+        <div className="logo-container">
+          <img src={logo} alt="Spendora Logo" className="logo" />
+        </div>
+        
+        <div className="login-form-content">
+          <h1 className="login-heading">Create an Account</h1>
+          <p className="login-subheading">
+            Join Spendora and take control of your finances
+          </p>
           
           {error && (
-            <Alert severity="error" sx={{ mb: 2, width: '100%' }}>
+            <div className="error-message">
               {error}
-            </Alert>
+            </div>
           )}
           
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="form-row">
+              <div className="form-group form-group-half">
+                <label htmlFor="first_name">First Name</label>
+                <input
+                  type="text"
+                  id="first_name"
                   name="first_name"
-                  required
-                  fullWidth
-                  id="firstName"
-                  label="First Name"
-                  autoFocus
+                  placeholder="Enter your first name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  error={!!formErrors.first_name}
-                  helperText={formErrors.first_name}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
                   required
-                  fullWidth
-                  id="lastName"
-                  label="Last Name"
+                  style={{ 
+                    border: '1px solid #1E1E1E',
+                    borderRadius: '30px'
+                  }}
+                />
+                {errors.first_name && <div className="input-error">{errors.first_name}</div>}
+              </div>
+              
+              <div className="form-group form-group-half">
+                <label htmlFor="last_name">Last Name</label>
+                <input
+                  type="text"
+                  id="last_name"
                   name="last_name"
+                  placeholder="Enter your last name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  error={!!formErrors.last_name}
-                  helperText={formErrors.last_name}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
                   required
-                  fullWidth
-                  id="email"
-                  label="Email Address"
-                  name="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  error={!!formErrors.email}
-                  helperText={formErrors.email}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  name="password"
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  autoComplete="new-password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  error={!!formErrors.password}
-                  helperText={formErrors.password}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
+                  style={{ 
+                    border: '1px solid #1E1E1E',
+                    borderRadius: '30px'
                   }}
                 />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  name="confirmPassword"
-                  label="Confirm Password"
-                  type={showPassword ? 'text' : 'password'}
-                  id="confirmPassword"
-                  autoComplete="new-password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  error={!!formErrors.confirmPassword}
-                  helperText={formErrors.confirmPassword}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-            </Grid>
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2, py: 1.5 }}
+                {errors.last_name && <div className="input-error">{errors.last_name}</div>}
+              </div>
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                style={{ 
+                  border: '1px solid #1E1E1E',
+                  borderRadius: '30px'
+                }}
+              />
+              {errors.email && <div className="input-error">{errors.email}</div>}
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Create a password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                style={{ 
+                  border: '1px solid #1E1E1E',
+                  borderRadius: '30px'
+                }}
+              />
+              {passwordStrength.message && (
+                <div className="password-strength">
+                  <div 
+                    className="strength-meter"
+                    style={{ 
+                      width: `${(passwordStrength.score / 4) * 100}%`,
+                      backgroundColor: passwordStrength.color
+                    }}
+                  ></div>
+                  <span style={{ color: passwordStrength.color }}>
+                    {passwordStrength.message}
+                  </span>
+                </div>
+              )}
+              {errors.password && <div className="input-error">{errors.password}</div>}
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="confirmPassword">Confirm Password</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                placeholder="Confirm your password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                style={{ 
+                  border: '1px solid #1E1E1E',
+                  borderRadius: '30px'
+                }}
+              />
+              {errors.confirmPassword && <div className="input-error">{errors.confirmPassword}</div>}
+            </div>
+            
+            <button 
+              type="submit" 
+              className="login-button"
               disabled={loading}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign Up'}
-            </Button>
-            <Grid container justifyContent="center">
-              <Grid item>
-                <Link component={RouterLink} to="/login" variant="body2">
-                  Already have an account? Sign in
-                </Link>
-              </Grid>
-            </Grid>
-          </Box>
-        </Paper>
-      </Box>
-    </Container>
+              <span className="login-button-text">
+                {loading ? 'Creating Account...' : 'Sign Up'}
+              </span>
+              <span className="login-arrow">→</span>
+            </button>
+            
+            <div className="register-link">
+              Already have an account? <RouterLink to="/login" style={{ color: '#0FBAE5' }}>Login</RouterLink>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div className="dashboard-preview">
+        {/* Dashboard preview is handled by CSS */}
+      </div>
+    </div>
   );
 };
 

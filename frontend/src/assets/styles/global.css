@@ -1,1 +1,73 @@
- 
+/* Global styles for Spendora application */
+
+/* Base styles for all components */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #11BBE5;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #008bb3;
+}
+
+/* Common utility classes */
+.text-center {
+  text-align: center;
+}
+
+.text-primary {
+  color: #11BBE5;
+}
+
+.text-success {
+  color: #4caf50;
+}
+
+.text-error {
+  color: #d32f2f;
+}
+
+.text-warning {
+  color: #ff9800;
+}
+
+/* Common animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Common responsive breakpoints */
+/* These are already covered by MUI but can be used in custom CSS */
+@media screen and (max-width: 600px) {
+  /* Mobile styles */
+}
+
+@media screen and (min-width: 601px) and (max-width: 960px) {
+  /* Tablet styles */
+}
+
+@media screen and (min-width: 961px) {
+  /* Desktop styles */
+} 

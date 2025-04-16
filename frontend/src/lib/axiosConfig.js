@@ -1,5 +1,11 @@
 import axios from 'axios';
 
+// We'll create an event for auth errors that can be listened to
+export const authEvents = {
+  onAuthError: new CustomEvent('auth-error'),
+  onTokenRefreshFailed: new CustomEvent('token-refresh-failed')
+};
+
 // Configure axios defaults
 axios.defaults.baseURL = 'http://localhost:8000/api';
 axios.defaults.headers.common['Content-Type'] = 'application/json';
@@ -68,7 +74,9 @@ axios.interceptors.response.use(
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
           delete axios.defaults.headers.common['Authorization'];
-          window.location.href = '/login';
+          
+          // Dispatch event instead of redirecting
+          window.dispatchEvent(authEvents.onAuthError);
           return Promise.reject(error);
         }
         
@@ -93,7 +101,9 @@ axios.interceptors.response.use(
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         delete axios.defaults.headers.common['Authorization'];
-        window.location.href = '/login';
+        
+        // Dispatch event instead of redirecting
+        window.dispatchEvent(authEvents.onTokenRefreshFailed);
         return Promise.reject(error);
       }
     }

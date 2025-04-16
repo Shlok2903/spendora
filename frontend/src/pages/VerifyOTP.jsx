@@ -1,226 +1,272 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  Container, 
-  Box, 
-  Typography, 
-  Paper, 
-  Button,
-  CircularProgress, 
-  Alert
-} from '@mui/material';
-import axios from '../lib/axiosConfig';
-import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
-import OtpInput from 'react-otp-input';
-import './OTPVerification.css';
+import { useToast } from '../context/ToastContext';
+import logo from '../assets/logo.svg';
+import './Login.css';
 
 const VerifyOTP = () => {
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
+  const [timer, setTimer] = useState(30);
+  const [resendDisabled, setResendDisabled] = useState(true);
   const [error, setError] = useState('');
-  const [resendLoading, setResendLoading] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  
+  const { verifyOTP, requestOTP } = useAuth();
   const toast = useToast();
-  const { verifyOTP } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const inputRefs = useRef([]);
+  const timerRef = useRef(null);
   
   // Get email and verification type from location state
-  const email = location.state?.email || '';
-  const verificationType = location.state?.verificationType || 'registration';
+  const email = location.state?.email;
+  const verificationType = location.state?.verificationType || 'login';
   
   useEffect(() => {
     if (!email) {
       navigate('/login');
-      toast.error('Email address is missing. Please try again.');
+      toast.error('Please provide an email address first.');
+      return;
     }
-  }, [email, navigate, toast]);
-  
-  // Timer for OTP expiry
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prevTime => {
-        if (prevTime <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
     
-    return () => clearInterval(timer);
+    // Start countdown timer
+    startTimer();
+    
+    // Focus on first input when component loads
+    if (inputRefs.current[0]) {
+      inputRefs.current[0].focus();
+    }
+    
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, []);
   
-  // Format time left as minutes:seconds
-  const formatTimeLeft = () => {
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  const startTimer = () => {
+    setTimer(30);
+    setResendDisabled(true);
+    
+    if (timerRef.current) clearInterval(timerRef.current);
+    
+    timerRef.current = setInterval(() => {
+      setTimer((prevTimer) => {
+        if (prevTimer <= 1) {
+          clearInterval(timerRef.current);
+          setResendDisabled(false);
+          return 0;
+        }
+        return prevTimer - 1;
+      });
+    }, 1000);
+  };
+  
+  const handleChange = (e, index) => {
+    const value = e.target.value;
+    
+    // Only allow single digit
+    if (value && !/^\d+$/.test(value)) return;
+    
+    // Update the OTP array
+    setOtp(prev => {
+      const newOtp = [...prev];
+      newOtp[index] = value.slice(0, 1);
+      return newOtp;
+    });
+    
+    // Auto-focus to next input if value is entered
+    if (value && index < 5 && inputRefs.current[index + 1]) {
+      inputRefs.current[index + 1].focus();
+    }
+  };
+  
+  const handleKeyDown = (e, index) => {
+    // Handle backspace - move to previous input if current is empty
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1].focus();
+    }
+    
+    // Handle arrow keys
+    if (e.key === 'ArrowRight' && index < 5) {
+      inputRefs.current[index + 1].focus();
+    }
+    
+    if (e.key === 'ArrowLeft' && index > 0) {
+      inputRefs.current[index - 1].focus();
+    }
+  };
+  
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text/plain').trim();
+    
+    if (!/^\d+$/.test(pastedData)) return;
+    
+    // Fill as many inputs as we have digits (up to 6)
+    const digits = pastedData.slice(0, 6).split('');
+    
+    setOtp(prev => {
+      const newOtp = [...prev];
+      digits.forEach((digit, idx) => {
+        if (idx < 6) newOtp[idx] = digit;
+      });
+      return newOtp;
+    });
+    
+    // Focus on the appropriate input
+    if (digits.length < 6 && inputRefs.current[digits.length]) {
+      inputRefs.current[digits.length].focus();
+    }
   };
   
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!otp || otp.length !== 6) {
-      setError('Please enter a valid 6-digit verification code');
+    const otpValue = otp.join('');
+    
+    if (otpValue.length !== 6) {
+      setError('Please enter the complete 6-digit code');
       return;
     }
     
     setLoading(true);
-    setError(null);
-    
-    // Get verification data from location state
-    const userData = location.state?.userData; // Get userData for registration
-    
-    if (!email || !verificationType) {
-      setError('Missing verification information. Please try again.');
-      setLoading(false);
-      return;
-    }
-    
-    try {
-      // For registration, pass the full userData for account creation
-      const success = await verifyOTP(email, otp, verificationType, 
-                                     verificationType === 'registration' ? userData : null);
-      
-      if (success) {
-        toast.success('Verification successful!');
-        
-        // Redirect based on verification type
-        if (verificationType === 'password_reset') {
-          // Store verification status for password reset flow
-          localStorage.setItem('password_reset_verified', 'true');
-          localStorage.setItem('password_reset_email', email);
-          localStorage.setItem('password_reset_otp', otp);
-          localStorage.setItem('password_reset_timestamp', Date.now().toString());
-          
-          // For password reset, redirect to reset password page
-          navigate('/reset-password', {
-            state: {
-              email: email,
-              otp_code: otp
-            }
-          });
-        } else {
-          // For registration or login, redirect to app
-          navigate('/app');
-        }
-      } else {
-        setError('Verification failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error during verification:', error);
-      setError('An error occurred during verification. Please try again.');
-    }
-    
-    setLoading(false);
-  };
-  
-  const handleResendOTP = async () => {
-    setResendLoading(true);
     setError('');
     
     try {
-      const response = await axios.post('/auth/request-otp/', {
+      const result = await verifyOTP({
+        email,
+        otp: otpValue,
+        verification_type: verificationType
+      });
+      
+      if (result.success) {
+        toast.success('Verification successful!');
+        
+        // Navigate based on verification type
+        if (verificationType === 'registration') {
+          navigate('/app/dashboard');
+        } else if (verificationType === 'password_reset') {
+          navigate('/reset-password', { 
+            state: { 
+              email, 
+              token: otpValue // Pass the actual OTP code as token
+            } 
+          });
+        } else {
+          // Login case
+          navigate('/app/dashboard');
+        }
+      } else {
+        setError(result.message || 'Invalid OTP. Please try again.');
+      }
+    } catch (err) {
+      console.error('OTP verification error:', err);
+      setError('Verification failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleResendOTP = async () => {
+    try {
+      setLoading(true);
+      const result = await requestOTP({
         email,
         verification_type: verificationType
       });
       
-      setTimeLeft(600); // Reset timer to 10 minutes
-      setResendLoading(false);
-      toast.success('New OTP has been sent to your email');
+      if (result.success) {
+        toast.success('A new verification code has been sent');
+        startTimer();
+      } else {
+        toast.error(result.message || 'Failed to send verification code');
+      }
     } catch (err) {
-      setResendLoading(false);
-      const errorMessage = err.response?.data?.error || 'Failed to resend OTP. Please try again.';
-      setError(errorMessage);
-      toast.error(errorMessage);
-    }
-  };
-  
-  const getTitle = () => {
-    switch (verificationType) {
-      case 'registration':
-        return 'Verify Your Email';
-      case 'login':
-        return 'Login Verification';
-      case 'password_reset':
-        return 'Reset Password';
-      default:
-        return 'Verification Required';
+      console.error('Resend OTP error:', err);
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
   
   return (
-    <Container maxWidth="sm" className="otp-container">
-      <Paper elevation={3} className="otp-card">
-        <Box className="otp-header">
-          <Typography variant="h4" component="h1">
-            {getTitle()}
-          </Typography>
-          <Typography variant="body1" className="otp-subtitle">
-            We've sent a verification code to <strong>{email}</strong>
-          </Typography>
-        </Box>
+    <div className="login-container">
+      <div className="login-content-section">
+        <div className="logo-container">
+          <img src={logo} alt="Spendora Logo" className="logo" />
+        </div>
         
-        <Box className="otp-content">
+        <div className="login-form-content">
+          <h1 className="login-heading">Verification</h1>
+          <p className="login-subheading">
+            We've sent a verification code to <strong>{email}</strong>
+          </p>
+          
           {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <div className="error-message">
               {error}
-            </Alert>
+            </div>
           )}
           
-          <Typography variant="body2" className="otp-instruction">
-            Enter the 6-digit code sent to your email
-          </Typography>
-          
-          <div className="otp-input-container">
-            <OtpInput
-              value={otp}
-              onChange={setOtp}
-              numInputs={6}
-              renderSeparator={<span className="otp-separator"></span>}
-              renderInput={(props) => <input {...props} className="otp-input" />}
-              inputStyle="otp-input"
-              shouldAutoFocus
-            />
-          </div>
-          
-          <Box className="otp-timer">
-            <Typography variant="body2">
-              {timeLeft > 0 ? `Code expires in ${formatTimeLeft()}` : 'Code has expired!'}
-            </Typography>
-          </Box>
-          
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            size="large"
-            onClick={handleSubmit}
-            disabled={loading || otp.length !== 6}
-            className="verify-button"
-          >
-            {loading ? <CircularProgress size={24} color="inherit" /> : 'Verify Code'}
-          </Button>
-          
-          <Box className="otp-footer">
-            <Typography variant="body2">
-              Didn't receive the code?
-            </Typography>
-            <Button
-              onClick={handleResendOTP}
-              disabled={resendLoading || timeLeft > 0}
-              color="primary"
-              className="resend-button"
+          <form onSubmit={handleSubmit}>
+            <div className="otp-container">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  ref={el => inputRefs.current[index] = el}
+                  type="text"
+                  value={digit}
+                  onChange={(e) => handleChange(e, index)}
+                  onKeyDown={(e) => handleKeyDown(e, index)}
+                  onPaste={index === 0 ? handlePaste : undefined}
+                  maxLength="1"
+                  className="otp-input"
+                  required
+                  style={{ 
+                    border: '1px solid #1E1E1E',
+                    backgroundColor: '#fff',
+                    borderRadius: '30px',
+                    width: '50px',
+                    height: '50px'
+                  }}
+                />
+              ))}
+            </div>
+            
+            <button 
+              type="submit" 
+              className="login-button"
+              disabled={loading}
             >
-              {resendLoading ? 'Sending...' : 'Resend Code'}
-              {timeLeft > 0 && ` (${formatTimeLeft()})`}
-            </Button>
-          </Box>
-        </Box>
-      </Paper>
-    </Container>
+              <span className="login-button-text">
+                {loading ? 'Verifying...' : 'Verify'}
+              </span>
+              <span className="login-arrow">→</span>
+            </button>
+            
+            <div className="resend-code">
+              {resendDisabled ? (
+                <p>Resend code in {timer} seconds</p>
+              ) : (
+                <button 
+                  type="button"
+                  onClick={handleResendOTP}
+                  className="resend-button"
+                  disabled={loading}
+                  style={{ color: '#0FBAE5' }}
+                >
+                  Resend code
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div className="dashboard-preview">
+        {/* Dashboard preview is handled by CSS */}
+      </div>
+    </div>
   );
 };
 

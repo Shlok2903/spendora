@@ -938,6 +938,9 @@ def verify_otp_code(request):
     otp_code = serializer.validated_data['otp_code']
     verification_type = serializer.validated_data['verification_type']
     
+    # Log the request data for debugging
+    logger.info(f"OTP verification request: {request.data}")
+    
     # Verify OTP
     is_valid, message = verify_otp(email, otp_code, verification_type)
     
@@ -946,6 +949,14 @@ def verify_otp_code(request):
     
     # Handle registration: create user after OTP verification
     if verification_type == 'registration':
+        # Get first name and last name from request
+        first_name = request.data.get('first_name', '')
+        last_name = request.data.get('last_name', '')
+        password = request.data.get('password', '')
+        
+        # Log the registration data (but hide actual password)
+        logger.info(f"Registration data: email={email}, first_name={first_name}, last_name={last_name}, has_password={bool(password)}")
+        
         # Check if user already exists but is not verified
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
@@ -956,24 +967,54 @@ def verify_otp_code(request):
                 )
             # Update existing unverified user
             user.is_email_verified = True
-            user.first_name = request.data.get('first_name', user.first_name)
-            user.last_name = request.data.get('last_name', user.last_name)
-            user.save()
-        else:
-            # Create new user now that OTP is verified
-            user = User.objects.create(
-                email=email,
-                first_name=request.data.get('first_name', ''),
-                last_name=request.data.get('last_name', ''),
-                is_active=True,
-                is_email_verified=True
-            )
+            user.first_name = first_name or user.first_name
+            user.last_name = last_name or user.last_name
             
             # Set password if provided
-            password = request.data.get('password')
             if password:
-                user.set_password(password)
+                try:
+                    user.set_password(password)
+                    logger.info(f"Password set for existing user: {email}")
+                except Exception as e:
+                    logger.error(f"Error setting password for existing user: {email}, Error: {str(e)}")
+                    return Response(
+                        {"error": "Error setting password. Please try again."},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
+            
+            try:
                 user.save()
+                logger.info(f"Updated existing user: {email}, verified={user.is_email_verified}")
+            except Exception as e:
+                logger.error(f"Error saving existing user: {email}, Error: {str(e)}")
+                return Response(
+                    {"error": "Error updating user. Please try again."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+        else:
+            # Create new user now that OTP is verified
+            try:
+                user = User.objects.create(
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name,
+                    is_active=True,
+                    is_email_verified=True
+                )
+                
+                # Set password if provided
+                if password:
+                    user.set_password(password)
+                    user.save()
+                    logger.info(f"Created new user with password: {email}")
+                else:
+                    logger.warning(f"Created user without password: {email}")
+            except Exception as e:
+                logger.error(f"Error creating new user: {email}, Error: {str(e)}")
+                return Response(
+                    {"error": "Error creating user. Please try again."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
     else:
         # For login or password reset, user must exist
         try:
@@ -994,6 +1035,8 @@ def verify_otp_code(request):
             "message": "Email verified and registration successful.",
             "user_id": user.id,
             "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
             "is_verified": user.is_email_verified,
             "tokens": {
                 "refresh": str(refresh),
