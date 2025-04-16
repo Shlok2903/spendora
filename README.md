@@ -873,13 +873,11 @@ The application implements comprehensive error logging:
 
 ## Contributors
 
-- **Siddh** (Project Lead)
+- **Siddh** (Project Lead & Developer)
   - System architecture design
   - Feature specification
   - Project management
   - Quality assurance
-
-- **Dhruv Patel** (Developer)
   - Frontend development
   - Backend implementation
   - Database design
