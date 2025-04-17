@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-Spendora is a comprehensive expense tracking application designed to help users manage their personal finances efficiently. The application allows users to track expenses, monitor income, categorize spending, and get insights into their financial habits through intuitive visualizations and reports.
+Spendora is a comprehensive expense tracking application designed to help users manage their personal finances efficiently. The application allows users to track expenses, monitor income, categorize spending, and get insights into their financial habits through intuitive visualizations and reports. Have made using react and djanog
 
 Developed with a focus on user experience and data security, Spendora addresses common pain points in personal finance management:
 - Difficulty keeping track of daily expenses
@@ -617,7 +617,6 @@ The frontend is organized into reusable components following a modular architect
 ### System Requirements
 - **Python**: v3.8 or higher
 - **pip**: v20.0 or higher
-- **Node.js**: v16.0.0 or higher (for frontend only)
 - **npm**: v8.0.0 or higher (for frontend only)
 - **Git**: For version control
 - **Modern web browser**: Chrome, Firefox, Safari, or Edge
