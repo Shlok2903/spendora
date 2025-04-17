@@ -164,6 +164,13 @@ Spendora follows a modern full-stack architecture with a clear separation betwee
   - CSRF protection
   - Input validation and sanitization
 
+- **Email System**:
+  - Django's built-in email framework
+  - SMTP integration for reliable delivery
+  - HTML email templates for better presentation
+  - Email verification workflows
+  - Configurable email settings
+
 - **Media Handling**: Pillow (10.2.0) for image processing
   - Image resizing and optimization
   - Secure file storage
@@ -608,10 +615,10 @@ The frontend is organized into reusable components following a modular architect
 ## Development Setup
 
 ### System Requirements
-- **Node.js**: v16.0.0 or higher
-- **npm**: v8.0.0 or higher
 - **Python**: v3.8 or higher
 - **pip**: v20.0 or higher
+- **Node.js**: v16.0.0 or higher (for frontend only)
+- **npm**: v8.0.0 or higher (for frontend only)
 - **Git**: For version control
 - **Modern web browser**: Chrome, Firefox, Safari, or Edge
 
@@ -641,6 +648,9 @@ DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 OPENAI_API_KEY=your_openai_api_key
+EMAIL_HOST=your_smtp_server
+EMAIL_HOST_USER=your_email
+EMAIL_HOST_PASSWORD=your_password
 ```
 
 5. Run database migrations
@@ -873,11 +883,13 @@ The application implements comprehensive error logging:
 
 ## Contributors
 
-- **Siddh** (Project Lead & Developer)
+- **Siddh** (Project Lead)
   - System architecture design
   - Feature specification
   - Project management
   - Quality assurance
+
+- **Dhruv Patel** (Developer)
   - Frontend development
   - Backend implementation
   - Database design
