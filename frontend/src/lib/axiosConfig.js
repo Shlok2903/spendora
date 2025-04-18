@@ -7,7 +7,7 @@ export const authEvents = {
 };
 
 // Configure axios defaults
-axios.defaults.baseURL = 'http://localhost:8000/api';
+axios.defaults.baseURL = 'https://backend.spendora.space/api';
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 // Log the baseURL for debugging
