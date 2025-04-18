@@ -13,7 +13,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-i%5x(jc^uar#jdo@bs0@h
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['44.201.238.159','spendora.space','www.spendora.space','backend.spendora.space']
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
