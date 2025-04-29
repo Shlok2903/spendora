@@ -181,3 +181,17 @@ class OTPVerification(models.Model):
             expires_at=expires_at,
             verification_type=verification_type
         )
+
+class WeeklyReportSubscription(models.Model):
+    """Model to track weekly expense report subscriptions"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='weekly_report_subscriptions')
+    is_active = models.BooleanField(default=True)
+    day_of_week = models.PositiveSmallIntegerField(
+        default=0,  # Monday
+        help_text="Day of the week to send report (0=Monday, 6=Sunday)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_sent_at = models.DateTimeField(null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.user.email} - {'Active' if self.is_active else 'Inactive'}"

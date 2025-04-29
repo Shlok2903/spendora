@@ -74,6 +74,7 @@ export const expenseAPI = {
   update: (id, data) => apiCall(axios.put, `/expenses/${id}/`, data),
   delete: (id) => apiCall(axios.delete, `/expenses/${id}/`),
   getSummary: (params) => apiCall(axios.get, '/expenses/summary/', { params }),
+  emailReport: (data) => apiCall(axios.post, '/expenses/email_report/', data),
 };
 
 // API functions for Incomes
@@ -84,6 +85,16 @@ export const incomeAPI = {
   update: (id, data) => apiCall(axios.put, `/incomes/${id}/`, data),
   delete: (id) => apiCall(axios.delete, `/incomes/${id}/`),
   getTotal: () => apiCall(axios.get, '/incomes/total/'),
+};
+
+// API functions for Weekly Report Subscriptions
+export const weeklyReportAPI = {
+  getAll: () => apiCall(axios.get, '/weekly-reports/'),
+  get: (id) => apiCall(axios.get, `/weekly-reports/${id}/`),
+  create: (data) => apiCall(axios.post, '/weekly-reports/', data),
+  update: (id, data) => apiCall(axios.put, `/weekly-reports/${id}/`, data),
+  delete: (id) => apiCall(axios.delete, `/weekly-reports/${id}/`),
+  toggle: (data) => apiCall(axios.post, '/weekly-reports/toggle/', data || {}),
 };
 
 export default axios; 

@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     UserViewSet, CategoryViewSet, SubCategoryViewSet, 
     ExpenseViewSet, IncomeViewSet, ChatViewSet,
-    request_otp, verify_otp_code, reset_password
+    request_otp, verify_otp_code, reset_password,
+    WeeklyReportSubscriptionViewSet
 )
 
 router = DefaultRouter()
@@ -13,6 +14,7 @@ router.register(r'subcategories', SubCategoryViewSet, basename='subcategory')
 router.register(r'expenses', ExpenseViewSet, basename='expense')
 router.register(r'incomes', IncomeViewSet, basename='income')
 router.register(r'chat', ChatViewSet, basename='chat')
+router.register(r'weekly-reports', WeeklyReportSubscriptionViewSet, basename='weekly-report')
 
 urlpatterns = [
     path('', include(router.urls)),

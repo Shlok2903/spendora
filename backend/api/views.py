@@ -4,12 +4,13 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from django.conf import settings
-from .models import Category, SubCategory, Expense, Income, ChatMessage, OTPVerification
+from .models import Category, SubCategory, Expense, Income, ChatMessage, OTPVerification, WeeklyReportSubscription
 from .serializers import (
     UserSerializer, UserUpdateSerializer, CategorySerializer,
     SubCategorySerializer, ExpenseSerializer, IncomeSerializer,
     ChatMessageSerializer, OTPRequestSerializer, OTPVerifySerializer,
-    PasswordResetSerializer, ChangePasswordSerializer
+    PasswordResetSerializer, ChangePasswordSerializer, WeeklyReportSubscriptionSerializer,
+    ExpenseReportRequestSerializer
 )
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
@@ -268,6 +269,33 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         }
         
         return Response(result)
+
+    @action(detail=False, methods=['post'])
+    def email_report(self, request):
+        """
+        Generate and email an expense report for a specific date range.
+        """
+        serializer = ExpenseReportRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            start_date = serializer.validated_data['start_date']
+            end_date = serializer.validated_data['end_date']
+            
+            from .utils import send_expense_report_email
+            success = send_expense_report_email(request.user, start_date, end_date)
+            
+            if success:
+                return Response({
+                    "message": "Expense report has been sent to your email",
+                    "start_date": start_date,
+                    "end_date": end_date,
+                    "email": request.user.email
+                })
+            else:
+                return Response({
+                    "error": "Failed to send expense report email"
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class IncomeViewSet(viewsets.ModelViewSet):
     serializer_class = IncomeSerializer
@@ -1221,3 +1249,42 @@ def test_email(request):
             "backend": settings.EMAIL_BACKEND,
             "debug": DEBUG
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class WeeklyReportSubscriptionViewSet(viewsets.ModelViewSet):
+    """
+    API endpoints for managing weekly expense report subscriptions.
+    """
+    serializer_class = WeeklyReportSubscriptionSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return WeeklyReportSubscription.objects.filter(user=self.request.user)
+    
+    @action(detail=False, methods=['post'])
+    def toggle(self, request):
+        """
+        Toggle weekly report subscription status.
+        Creates a subscription if none exists, or toggles existing subscription.
+        """
+        subscription = WeeklyReportSubscription.objects.filter(user=request.user).first()
+        
+        if subscription:
+            # Toggle existing subscription
+            subscription.is_active = not subscription.is_active
+            subscription.save()
+            message = f"Weekly reports {'enabled' if subscription.is_active else 'disabled'}"
+        else:
+            # Create new subscription with default values
+            day_of_week = request.data.get('day_of_week', 0)  # Default to Monday
+            subscription = WeeklyReportSubscription.objects.create(
+                user=request.user,
+                is_active=True,
+                day_of_week=day_of_week
+            )
+            message = "Weekly reports enabled"
+        
+        serializer = self.get_serializer(subscription)
+        return Response({
+            "message": message,
+            "subscription": serializer.data
+        })

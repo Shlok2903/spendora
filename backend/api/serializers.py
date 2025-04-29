@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .models import Category, SubCategory, Expense, Income, ChatMessage, OTPVerification
+from .models import Category, SubCategory, Expense, Income, ChatMessage, OTPVerification, WeeklyReportSubscription
 
 User = get_user_model()
 
@@ -119,7 +119,7 @@ class IncomeSerializer(serializers.ModelSerializer):
 class ChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage
-        fields = ('id', 'role', 'content', 'created_at')
+        fields = ['id', 'role', 'content', 'created_at']
     
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
@@ -192,3 +192,26 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError({"new_password": list(e)})
         
         return attrs 
+
+class WeeklyReportSubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WeeklyReportSubscription
+        fields = ['id', 'is_active', 'day_of_week', 'created_at', 'last_sent_at']
+        read_only_fields = ['created_at', 'last_sent_at']
+        
+    def create(self, validated_data):
+        # Set the user from the current request
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+
+class ExpenseReportRequestSerializer(serializers.Serializer):
+    start_date = serializers.DateField(required=True)
+    end_date = serializers.DateField(required=True)
+    
+    def validate(self, data):
+        """
+        Check that start_date is before end_date.
+        """
+        if data['start_date'] > data['end_date']:
+            raise serializers.ValidationError("End date must be after start date")
+        return data 

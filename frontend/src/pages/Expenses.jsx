@@ -37,9 +37,10 @@ import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
   Clear as ClearIcon,
-  ErrorOutline as ErrorIcon
+  ErrorOutline as ErrorIcon,
+  Email as EmailIcon
 } from '@mui/icons-material';
-import { expenseAPI, categoryAPI, subCategoryAPI } from '../lib/api';
+import { expenseAPI, categoryAPI, subCategoryAPI, weeklyReportAPI } from '../lib/api';
 import axios from '../lib/axiosConfig';
 import { useToast } from '../context/ToastContext';
 
@@ -73,6 +74,16 @@ const Expenses = () => {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   
+  // Email report dialog state
+  const [openReportDialog, setOpenReportDialog] = useState(false);
+  const [reportForm, setReportForm] = useState({
+    start_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Last 30 days
+    end_date: new Date().toISOString().split('T')[0] // Today
+  });
+  const [reportLoading, setReportLoading] = useState(false);
+  const [weeklyReportEnabled, setWeeklyReportEnabled] = useState(false);
+  const [weeklyReportLoading, setWeeklyReportLoading] = useState(false);
+  
   // Add toast functionality
   const toast = useToast();
   
@@ -90,6 +101,7 @@ const Expenses = () => {
     console.log('Authenticated, fetching expenses and categories');
     fetchExpenses();
     fetchCategories();
+    fetchWeeklyReportStatus();
   }, [page, rowsPerPage, searchQuery, selectedCategory]);
 
   // Fetch expenses with filters
@@ -491,6 +503,64 @@ const Expenses = () => {
     fetchCategories();
   };
 
+  // Fetch weekly report subscription status
+  const fetchWeeklyReportStatus = async () => {
+    try {
+      const response = await weeklyReportAPI.getAll();
+      const subscriptions = response.data;
+      
+      if (subscriptions && subscriptions.length > 0) {
+        // If there's at least one subscription, check if any are active
+        const activeSubscription = subscriptions.find(sub => sub.is_active);
+        setWeeklyReportEnabled(!!activeSubscription);
+      } else {
+        setWeeklyReportEnabled(false);
+      }
+    } catch (error) {
+      console.error('Error fetching weekly report status:', error);
+      // Don't show error to user, just set to false
+      setWeeklyReportEnabled(false);
+    }
+  };
+
+  // Handle sending expense report email
+  const handleSendReport = async () => {
+    setReportLoading(true);
+    try {
+      const response = await expenseAPI.emailReport(reportForm);
+      setOpenReportDialog(false);
+      toast.success('Expense report has been sent to your email');
+    } catch (error) {
+      console.error('Error sending expense report:', error);
+      toast.error('Failed to send expense report. Please try again.');
+    } finally {
+      setReportLoading(false);
+    }
+  };
+  
+  // Handle toggling weekly report subscription
+  const handleToggleWeeklyReport = async () => {
+    setWeeklyReportLoading(true);
+    try {
+      const response = await weeklyReportAPI.toggle();
+      setWeeklyReportEnabled(!weeklyReportEnabled);
+      toast.success(response.data.message);
+    } catch (error) {
+      console.error('Error toggling weekly report subscription:', error);
+      toast.error('Failed to update weekly report settings');
+    } finally {
+      setWeeklyReportLoading(false);
+    }
+  };
+  
+  // Handle report form change
+  const handleReportFormChange = (e) => {
+    setReportForm({
+      ...reportForm,
+      [e.target.name]: e.target.value
+    });
+  };
+
   // Render error state
   if (error && !loading) {
     return (
@@ -531,14 +601,24 @@ const Expenses = () => {
         <Typography variant="h4" component="h1" gutterBottom>
           Expenses
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleCreateExpense}
-          sx={{ my: 1 }}
-        >
-          Add Expense
-        </Button>
+        <Box>
+          <Button
+            variant="outlined"
+            startIcon={<EmailIcon />}
+            onClick={() => setOpenReportDialog(true)}
+            sx={{ mr: 1 }}
+          >
+            Email Report
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleCreateExpense}
+            sx={{ my: 1 }}
+          >
+            Add Expense
+          </Button>
+        </Box>
       </Box>
 
       {/* Search and filters */}
@@ -809,6 +889,82 @@ const Expenses = () => {
           <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
           <Button variant="contained" onClick={handleSubmit}>
             {currentExpense ? 'Update' : 'Add'} Expense
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Email Report Dialog */}
+      <Dialog
+        open={openReportDialog}
+        onClose={() => setOpenReportDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Email Expense Report</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 1 }}>
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              Select a date range for your expense report. The report will be sent to your registered email address.
+            </Typography>
+            
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Start Date"
+                  type="date"
+                  name="start_date"
+                  value={reportForm.start_date}
+                  onChange={handleReportFormChange}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="End Date"
+                  type="date"
+                  name="end_date"
+                  value={reportForm.end_date}
+                  onChange={handleReportFormChange}
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+            </Grid>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 3, pt: 2, borderTop: '1px solid rgba(0,0,0,0.12)' }}>
+              <Typography variant="body2" sx={{ flex: 1 }}>
+                Weekly Report Subscription
+              </Typography>
+              <Button
+                variant={weeklyReportEnabled ? "outlined" : "contained"}
+                color={weeklyReportEnabled ? "error" : "primary"}
+                onClick={handleToggleWeeklyReport}
+                disabled={weeklyReportLoading}
+                size="small"
+              >
+                {weeklyReportLoading ? <CircularProgress size={20} /> : 
+                  weeklyReportEnabled ? "Disable" : "Enable"}
+              </Button>
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+              {weeklyReportEnabled 
+                ? "You will receive a weekly expense report every Monday." 
+                : "Enable to receive a summary of your expenses every week."}
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenReportDialog(false)}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSendReport} 
+            variant="contained" 
+            disabled={reportLoading}
+            startIcon={reportLoading ? <CircularProgress size={20} /> : <EmailIcon />}
+          >
+            Send Report
           </Button>
         </DialogActions>
       </Dialog>
